@@ -171,10 +171,14 @@ function saveURL(path) {
             "url" : url
          };
          if(curDirCont[name]) {
-          //prompt to delete existing file
+            //prompt to delete existing file
+            var del = window.confirm("A file with that name already exists. Should we replace it?");
+            if(del == false) {
+              return;
+            }
          } else {
-           curDirCont[name] = newObj;
-           //chrome.storage.sync.set()
+             curDirCont[name] = newObj;
+             //chrome.storage.sync.set()
          }
          curDirCont = parseFileSystemContents(JSON.parse(fileSystem), path);
          console.log("After adding URL");
