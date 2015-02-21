@@ -58,11 +58,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
   $('#saveButton').click(function() {
     chrome.storage.sync.get(cdkey, saveURL);
+    /*chrome.storage.sync.get("url", function(obj) {
+      console.log("The last URL was: " + obj["url"]);
+    });
+    getCurrentTabUrl(function(url) {
+      chrome.storage.sync.set({"url" : url}, function() {
+        console.log("Setting new URL");
+      })
+    });*/
   });
+
+
   //chrome.storage.sync.clear();
   //renderCurrentDirectory("");
-  //chrome.storage.sync.get("currentDir", renderCurrentDirectory); 
-
+  //chrome.storage.sync.get(cdkey, renderCurrentDirectory);
+  var obj = {};
+  obj[cdkey] = "/";
+  chrome.storage.sync.set(obj, function() {
+    renderCurrentDirectory(obj[cdkey]);
+  });
+  
   /*getCurrentTabUrl(function(url) {
     chrome.storage.sync.get('jsonFile', function(object) {
       if(Object.keys(object).length === 0) {
@@ -87,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function parseFilesystemContents(fileSystemContents, path){
+  console.log(path);
   // will have the storage get calls
   if(path[0] !== '/'){
     console.log("malformed path in parseFilesystemContents: doesnt start with '/'");
@@ -114,7 +130,7 @@ function parseFilesystemContents(fileSystemContents, path){
 
 function renderCurrentDirectory(path){
 
-  var fs = {
+  /*var fs = {
     "dir1": {
       "type": "directory",
       "contents" : {
@@ -122,17 +138,35 @@ function renderCurrentDirectory(path){
           "type": "directory",
           "contents":{"wakaka": "bloop"}
         }
+        "google" : {
+          "type": "url",
+          "url": "https://www.google.com/?gws_rd=ssl"
+        }
       }
     }
-  };
+  };*/
 
-  var pat = "/dir1/doop/";
+  //console.log(parseFilesystemContents(fs, pat));
+  console.log("rendering: " + path);
+  chrome.storage.sync.get(fskey, function(fileSystem) {
+       console.log("fetched fs data");
+       var curDirCont = parseFilesystemContents(JSON.parse(fileSystem[fskey]), path);
+       var count = 0;
+       $("#contentsTable tr:not(#head_row)").remove();
+       for(key in curDirCont){
+          var tableElem = $("<tr id=\"file" + count + "\"" 
+                              + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
+                              + " srcName=\"" + key + "\">"
+                              + "<td>" + key + "</td>"
+                              + "<td>" + curDirCont[key]["type"] + "</td></tr>");
+          $("#contentsTable tr:last").after(tableElem);
+          tableElem.click(listenFsItem);
+          count++;
+       }
+  });
 
-  console.log(parseFilesystemContents(fs, pat));
+  //do the rendering here
 
-  /*chrome.storage.sync.get("jsonFile", function(fileSystem) {
-       var curDirCont = parseFileSystemContents(JSON.parse(fileSystem), path);
-  });*/
 }
 
 //this function returns whether or not the passed in file name is valid or not
@@ -153,8 +187,10 @@ function saveURL(path) {
   getCurrentTabUrl(function(url) {
     chrome.storage.sync.get(fskey, function(fileSystem) {
       console.log(fileSystem);
-      try {
-        fileSystem = JSON.parse(fileSystem);
+      fileSystem = fileSystem[fskey];
+      console.log(fileSystem);
+      /*try {
+        fileSystem = JSON.parse(fileSystem[fskey]);
       }
       catch(e) {
         fileSystem = {};
@@ -172,7 +208,24 @@ function saveURL(path) {
             }
           }
         };
-      }
+      }*/
+       if(fileSystem == undefined) {
+        console.log("Creating default dir");
+        fileSystem = {
+          "dir1": {
+            "type": "directory",
+            "contents" : {
+              "doop": {
+                "type": "directory",
+                "contents":{"wakaka": "bloop"}
+              }
+            }
+          }
+        };
+       }
+       else {
+        fileSystem = JSON.parse(fileSystem);
+       }
        var curDirCont = parseFilesystemContents(fileSystem, path); 
        console.log("Before adding URL");
        console.log(fileSystem);
@@ -192,8 +245,10 @@ function saveURL(path) {
             }
          }
          curDirCont[name] = newObj;
-         chrome.storage.sync.set({fskey : JSON.stringify(fileSystem)}, function() {
-          console.log("This was stored");
+         var obj = {};
+         obj[fskey] = JSON.stringify(fileSystem)
+         chrome.storage.sync.set(obj, function() {
+          renderCurrentDirectory(path);
          });
          curDirCont = parseFilesystemContents(fileSystem, path); 
          console.log("After adding URL");
@@ -204,11 +259,48 @@ function saveURL(path) {
 }
 
 // Will get called when a fs item is clicked
-function listenFsItem(){
+function listenFsItem(event){
+  var elem = $(event.target);
+  if(elem.prop("tagName") === "TD"){
+    console.log("getting the parent");
+    elem = elem.parent("tr");
+  }
+  //console.log(elem.attr("srcName"));
+  var name = elem.attr("srcName");
+  chrome.storage.sync.get(cdkey, function(cdobj) {
+    chrome.storage.sync.get(fskey, function(fsobj) {
+      var curDirCont = parseFilesystemContents(JSON.parse(fsobj[fskey]), cdobj[cdkey]);
+      console.log(name);
+      console.log(curDirCont);
+      console.log(curDirCont[name]);
+      if(curDirCont[name]["type"] === "directory") {
+        var obj = {};
+        obj[cdkey] = cdobj[cdkey] + name + "/";
+        chrome.storage.sync.set(obj, function() {
+          console.log("We have set the new current directory value");
+          renderCurrentDirectory(obj[cdkey]);
+        });
+      }
+      //if url item, open page in new tab
+      else if(curDirCont[name]["type"] === "url") {
+        chrome.tabs.create({url : curDirCont[name]["url"]});
+      }
+      else {
+        console.log("Error in listenFsItem: " + curDirCont[name] + " is neither a directory nor url.");
+      }
+    });
+  });
   //if this is a diretory, move to dir. and update the current directory in storage
+  /*if(obj["type"] == "directory") {
 
+  }
   //if url item, open page in new tab
-
+  else if(obj["type"] == "url") {
+    chrome.tabs.create({url : obj["url"]})  
+  }
+  else {
+    console.log("Error in listenFsItem: " + obj + " is neither a directory nor url.");
+  }*/
 }
 
 function moveUpDir() {

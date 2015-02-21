@@ -6,11 +6,6 @@ body: {
 	height: 400px;
 }
 
-table{
-	width: 100%;
-	border: solid black 1px;
-}
-
 /*tr {
 	border: solid black 1px;
 }*/
@@ -22,6 +17,12 @@ td {
 
 div {
 	margin-bottom: 10px;
+}
+
+
+#contentsTable{
+	width: 100%;
+	border: solid black 1px;
 }
 
 #menuBar {
@@ -45,7 +46,15 @@ div {
 	padding: 3px;
 }
 
+.oddfile:hover {
+	background-color: red;
+}
+
 .evenfile {
 	background-color: #7D8BBA;
 	padding: 3px;
+}
+
+.evenfile:hover {
+	background-color: red;
 }

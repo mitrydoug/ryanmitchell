@@ -13,10 +13,18 @@
 	</div id="saveDiv">
 	<div id="fsDisplay">
 		<div id="curDirLabel">
-			Current Path: /this/is/a/dir
+			<button> << </button>
+			Path: 
+			<table id="curDirTable">
+				<tr><td>/</td>
+					<td>this/</td>
+					<td>is/</td>
+					<td>a/</td>
+					<td>dir</td></tr>
+			</table>
 		</div>
 		<div id= "dirContents">
-			<table>
+			<table id="contentsTable">
 				<tr id="head_row">
 					<td>
 						Name
@@ -25,7 +33,7 @@
 						Type
 					</td>
 				</tr>
-				<tr class="evenfile" >
+				<!--<tr class="evenfile" >
 					<td>
 						Cat Video
 					</td>
@@ -64,7 +72,7 @@
 					<td>
 						URL
 					</td>
-				</tr>
+				</tr>-->
 			</table>
 		</div>
 	</div>
