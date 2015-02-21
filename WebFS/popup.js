@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var fskey = "jsonFile";
+var cdkey = "currentDir";
+
 /**
  * Get the current URL.
  *
@@ -53,8 +56,8 @@ function renderStatus(url) {
 
 document.addEventListener('DOMContentLoaded', function() {
 
-  $('#saveButton').onClick(function(){
-      
+  $('#saveButton').onClick(function() {
+    chrome.storage.sync.get(cdkey, saveURL);
   });
 
   renderCurrentDirectory("");
@@ -130,6 +133,55 @@ function renderCurrentDirectory(path){
   /*chrome.storage.sync.get("jsonFile", function(fileSystem) {
        var curDirCont = parseFileSystemContents(JSON.parse(fileSystem), path);
   });*/
+}
+
+//this function returns whether or not the passed in file name is valid or not
+function validName(name) {
+  if(!name) return false;
+  if(name.indexOf("/") > -1) return false;
+  if(name.length > 32) return false;
+  return true;
+}
+
+//this will get called when the save button is clicked and it will save the current URL into the current directory
+function saveURL(path) {
+  path = "/dir1/"; // remove this later. for testing purposes
+  getCurrentTabUrl(function(url) {
+    chrome.storage.sync.get(fskey, function(fileSystem) {
+      fileSystem = {
+        "dir1": {
+          "type": "directory",
+          "contents" : {
+            "doop": {
+              "type": "directory",
+              "contents":{"wakaka": "bloop"}
+            }
+          }
+        }
+      };
+       var curDirCont = parseFileSystemContents(JSON.parse(fileSystem), path);
+       console.log("Before adding URL");
+       console.log(fs);
+       var name = window.prompt("Please enter a name for this web page.", "");
+       if(!validName(name)) {
+         window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
+       } else {
+         var newObj = {
+            "type" : "url",
+            "url" : url
+         };
+         if(curDirCont[name]) {
+          //prompt to delete existing file
+         } else {
+           curDirCont[name] = newObj;
+           //chrome.storage.sync.set()
+         }
+         curDirCont = parseFileSystemContents(JSON.parse(fileSystem), path);
+         console.log("After adding URL");
+         console.log(fs);
+       }
+    });
+  });
 }
 
 // Will get called when a fs item is clicked
