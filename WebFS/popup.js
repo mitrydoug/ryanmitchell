@@ -130,17 +130,23 @@ function renderCurrentDirectory(path){
           "type": "directory",
           "contents":{"wakaka": "bloop"}
         }
+        "google" : {
+          "type": "url",
+          "url": "https://www.google.com/?gws_rd=ssl"
+        }
       }
     }
   };
 
-  var pat = "/dir1/doop/";
+  var pat = "/dir1/";
 
-  console.log(parseFilesystemContents(fs, pat));
+  //console.log(parseFilesystemContents(fs, pat));
 
   /*chrome.storage.sync.get("jsonFile", function(fileSystem) {
        var curDirCont = parseFileSystemContents(JSON.parse(fileSystem), path);
   });*/
+
+  //do the rendering here
 }
 
 //this function returns whether or not the passed in file name is valid or not
@@ -235,9 +241,16 @@ function saveURL(path) {
 // Will get called when a fs item is clicked
 function listenFsItem(){
   //if this is a diretory, move to dir. and update the current directory in storage
+  /*if(obj["type"] == "directory") {
 
+  }
   //if url item, open page in new tab
-
+  else if(obj["type"] == "url") {
+    chrome.tabs.create({url : obj["url"]})  
+  }
+  else {
+    console.log("Error in listenFsItem: " + obj + " is neither a directory nor url.");
+  }*/
 }
 
 /**
