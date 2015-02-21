@@ -10,7 +10,7 @@ body: {
 	border: solid black 1px;
 }*/
 
-td {
+#contentsTable > td {
 	border: solid black 1px;
 	/*background-color: #999999;*/
 }
@@ -56,5 +56,29 @@ div {
 }
 
 .evenfile:hover {
+	background-color: red;
+}
+
+.oddmarker{
+	padding-top: 3px;
+	padding-bottom: 3px;
+	padding-left: 5px;
+	padding-right: 0px;
+	background-color: #A9B3D1;
+}
+
+.oddmarker:hover {
+	background-color: red;
+}
+
+.evenmarker{
+	padding-top: 3px;
+	padding-bottom: 3px;
+	padding-left: 5px;
+	padding-right: 0px;
+	background-color: #7D8BBA;
+}
+
+.evenmarker:hover {
 	background-color: red;
 }

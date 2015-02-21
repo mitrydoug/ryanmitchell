@@ -148,6 +148,27 @@ function renderCurrentDirectory(path){
 
   //console.log(parseFilesystemContents(fs, pat));
   console.log("rendering: " + path);
+
+  var pathTokens = path.split("/").slice(1, path.split("/").length - 1);
+  console.log(pathTokens);
+  $("#curDirRow td").remove();
+  var backArrows = $("<td id=\"backArrow\" class=\"evenmarker\"> << </td>");
+  var rootFolder = $("<td id=\"root\" class=\"oddmarker\" dirName=\"/\">/</td>");
+  backArrows.click(listenDirItem);
+  rootFolder.click(listenDirItem);
+  $("#curDirRow").append(backArrows);
+  $("#curDirRow").append(rootFolder);
+  var count = 2;
+  for(index in pathTokens){
+    var dirItem = $("<td id=\"diritem" + count + "\" class=\"" + (count % 2 == 0 ? "evenmarker" : "oddmarker") + "\"" + 
+                         "dirName=\"" + pathTokens[index] + "\">"
+                                      + pathTokens[index] + "</td>");
+    dirItem.click(listenDirItem);
+    $("#curDirRow td:last").after(dirItem)
+    $("#curDirRow td:last").after("<td>/</td>");
+    count++;
+  }
+
   chrome.storage.sync.get(fskey, function(fileSystem) {
        console.log("fetched fs data");
        var curDirCont = parseFilesystemContents(JSON.parse(fileSystem[fskey]), path);
@@ -258,6 +279,10 @@ function saveURL(path) {
   });
 }
 
+function listenDirItem(event){
+  console.log($(event.target).attr("dirName"));
+}
+
 // Will get called when a fs item is clicked
 function listenFsItem(event){
   var elem = $(event.target);
@@ -303,7 +328,7 @@ function listenFsItem(event){
   }*/
 }
 
-function moveUpDir() {
+/*function moveUpDir() {
 	chrome.storage.sync.get(cdkey, function(cdobj) {
 		var path = cdobj[cdkey];
 		//if the current directory is root, then don't do anything
@@ -315,7 +340,7 @@ function moveUpDir() {
 		//chop off the last '/'
 		path = path.substr(0, 
 	});
-}
+}*/
 
 /**
  * @param {string} searchTerm - Search term for Google Image search.
