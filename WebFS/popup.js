@@ -153,7 +153,7 @@ function renderCurrentDirectory(path){
   console.log(pathTokens);
   $("#curDirRow td").remove();
   var backArrows = $("<td id=\"backArrow\" class=\"evenmarker\"> << </td>");
-  var rootFolder = $("<td id=\"root\" class=\"oddmarker\" dirName=\"/\">/</td>");
+  var rootFolder = $("<td id=\"diritem1\" class=\"oddmarker\" dirName=\"/\">/</td>");
   backArrows.click(listenDirItem);
   rootFolder.click(listenDirItem);
   $("#curDirRow").append(backArrows);
@@ -280,7 +280,26 @@ function saveURL(path) {
 }
 
 function listenDirItem(event){
-  console.log($(event.target).attr("dirName"));
+  if(event.target.id === "backArrow") {
+    moveUpDir();
+  }
+  else {
+    console.log($(event.target).attr("dirName"));
+    var targetID = event.target.id;
+    var dirNum = event.target.id;
+    dirNum = dirNum.substr(dirNum.lastIndexOf("m") + 1); //since it is diritem#
+    console.log(dirNum);
+    var path = "";
+    for(var i = 1; i <= dirNum; i++) {
+      path += $("#diritem" + i).text() + (i === 1 ? "" : "/");
+      console.log(path);
+    }
+    var obj = {};
+    obj[cdkey] = path;
+    chrome.storage.sync.set(obj, function() {
+      renderCurrentDirectory(path);
+    });
+  }
 }
 
 // Will get called when a fs item is clicked
@@ -328,7 +347,7 @@ function listenFsItem(event){
   }*/
 }
 
-/*function moveUpDir() {
+function moveUpDir() {
 	chrome.storage.sync.get(cdkey, function(cdobj) {
 		var path = cdobj[cdkey];
 		//if the current directory is root, then don't do anything
@@ -347,7 +366,7 @@ function listenFsItem(event){
 			renderCurrentDirectory(path);
 		});
 	});
-}*/
+}
 
 /**
  * @param {string} searchTerm - Search term for Google Image search.
