@@ -17,7 +17,6 @@ function getCurrentTabUrl(callback) {
   };
 
   chrome.tabs.query(queryInfo, function(tabs) {
-    console.log('query worked');
     // chrome.tabs.query invokes the callback with a list of tabs that match the
     // query. When the popup is opened, there is certainly a window and at least
     // one tab, so we can safely assume that |tabs| is a non-empty array.
@@ -48,6 +47,99 @@ function getCurrentTabUrl(callback) {
   // alert(url); // Shows "undefined", because chrome.tabs.query is async.
 }
 
+function renderStatus(url) {
+  document.getElementById('url').textContent = url;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+
+  $('#saveButton').onClick(function(){
+      
+  });
+
+  renderCurrentDirectory("");
+  //chrome.storage.sync.get("currentDir", renderCurrentDirectory); 
+
+  /*getCurrentTabUrl(function(url) {
+    chrome.storage.sync.get('jsonFile', function(object) {
+      if(Object.keys(object).length === 0) {
+        console.log("Creating el root file");
+        var initialFile = {};
+        chrome.storage.sync.set({'jsonFile': url}, function() {
+          console.log("Set the initial file");
+        });
+      }
+      else {
+        renderStatus("Last URL: " + object['jsonFile']);
+        console.log("Need to update file since it exists");
+        chrome.storage.sync.set({'jsonFile': url}, function() {
+          console.log("Updated file");
+          chrome.storage.sync.clear(function() {
+            console.log("Clearing storage");
+          });
+        });
+      }
+    }); 
+  });*/
+});
+
+function parseFilesystemContents(fileSystemContents, path){
+  // will have the storage get calls
+  if(path[0] !== '/'){
+    console.log("malformed path in parseFilesystemContents: doesnt start with '/'");
+    return undefined;
+  } else if(path === '/'){
+    return fileSystemContents; 
+  }
+
+  var dirname = path.substr(1, path.substr(1).indexOf('/'));
+
+  if(fileSystemContents[dirname]){
+    var newCont = fileSystemContents[dirname];
+    if(newCont["type"] === 'directory'){
+      console.log("found directory: " + dirname + " and recursing on : " + path.substr(1 + dirname.length));
+      return parseFilesystemContents(newCont["contents"], path.substr(1 + dirname.length));
+    } else {
+      console.log("malformed path in parseFilesystemContents: " + dirname + " is not a directory type");
+      return undefined; 
+    }
+  } else {
+    console.log("malformed path in parseFilesystemContents: directory " + dirname + " does not exist");
+    return undefined; 
+  }
+}
+
+function renderCurrentDirectory(path){
+
+  var fs = {
+    "dir1": {
+      "type": "directory",
+      "contents" : {
+        "doop": {
+          "type": "directory",
+          "contents":{"wakaka": "bloop"}
+        }
+      }
+    }
+  };
+
+  var pat = "/dir1/doop/";
+
+  console.log(parseFilesystemContents(fs, pat));
+
+  /*chrome.storage.sync.get("jsonFile", function(fileSystem) {
+       var curDirCont = parseFileSystemContents(JSON.parse(fileSystem), path);
+  });*/
+}
+
+// Will get called when a fs item is clicked
+function listenFsItem(){
+  //if this is a diretory, move to dir. and update the current directory in storage
+
+  //if url item, open page in new tab
+
+}
+
 /**
  * @param {string} searchTerm - Search term for Google Image search.
  * @param {function(string,number,number)} callback - Called when an image has
@@ -55,7 +147,7 @@ function getCurrentTabUrl(callback) {
  * @param {function(string)} errorCallback - Called when the image is not found.
  *   The callback gets a string that describes the failure reason.
  */
-function getImageUrl(searchTerm, callback, errorCallback) {
+/*function getImageUrl(searchTerm, callback, errorCallback) {
   // Google image search - 100 searches per day.
   // https://developers.google.com/image-search/
   var searchUrl = 'https://ajax.googleapis.com/ajax/services/search/images' +
@@ -87,34 +179,18 @@ function getImageUrl(searchTerm, callback, errorCallback) {
     errorCallback('Network error.');
   };
   x.send();
-}
+}*/
 
-function renderStatus(url) {
-  document.getElementById('url').textContent = url;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('at the top');
-  getCurrentTabUrl(function(url) {
-    // Put the image URL in Google search.
-    renderStatus('Your URL is: ' + url);
-
-    //getImageUrl(url, function(imageUrl, width, height) {
-
-      //renderStatus('Search term: ' + url + '\n' +
-         // 'Google image search result: ' + imageUrl);
-      //var imageResult = document.getElementById('image-result');
-      // Explicitly set the width/height to minimize the number of reflows. For
-      // a single image, this does not matter, but if you're going to embed
-      // multiple external images in your page, then the absence of width/height
-      // attributes causes the popup to resize multiple times.
-      //imageResult.width = width;
-      //imageResult.height = height;
-      //imageResult.src = imageUrl;
-      //imageResult.hidden = false;
-
-    //}, function(errorMessage) {
-     /// renderStatus('Cannot get url');
-    //});
-  });
-});
+//filesystem
+/*{
+  "dir1": {
+    "type": "directory",
+    "contents": {
+        /* recursive  
+    } 
+  }
+  "file1": {
+    "type": "url",
+    "url" : "google.com"
+  }
+}*/
