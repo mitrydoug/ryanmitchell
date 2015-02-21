@@ -11,6 +11,8 @@
   },
   "permissions": [
     "activeTab",
-    "storage"
+    "tabs",
+    "storage",
+    "https://ajax.googleapis.com/"
   ]
 }
