@@ -59,8 +59,8 @@ document.addEventListener('DOMContentLoaded', function() {
   $('#saveButton').click(function() {
     chrome.storage.sync.get(cdkey, saveURL);
   });
-
-  renderCurrentDirectory("");
+  //chrome.storage.sync.clear();
+  //renderCurrentDirectory("");
   //chrome.storage.sync.get("currentDir", renderCurrentDirectory); 
 
   /*getCurrentTabUrl(function(url) {
@@ -143,23 +143,37 @@ function validName(name) {
   return true;
 }
 
+function isEmpty(object) {
+  return Object.keys(object).length === 0;
+}
+
 //this will get called when the save button is clicked and it will save the current URL into the current directory
 function saveURL(path) {
   path = "/dir1/"; // remove this later. for testing purposes
   getCurrentTabUrl(function(url) {
     chrome.storage.sync.get(fskey, function(fileSystem) {
-      fileSystem = {
-        "dir1": {
-          "type": "directory",
-          "contents" : {
-            "doop": {
-              "type": "directory",
-              "contents":{"wakaka": "bloop"}
+      console.log(fileSystem);
+      try {
+        fileSystem = JSON.parse(fileSystem);
+      }
+      catch(e) {
+        fileSystem = {};
+      }
+      if(isEmpty(fileSystem)) {  
+        console.log("Creating default dir");
+        fileSystem = {
+          "dir1": {
+            "type": "directory",
+            "contents" : {
+              "doop": {
+                "type": "directory",
+                "contents":{"wakaka": "bloop"}
+              }
             }
           }
-        }
-      };
-       var curDirCont = parseFilesystemContents(fileSystem, path); //will be JSON.parse(fileSystem)
+        };
+      }
+       var curDirCont = parseFilesystemContents(fileSystem, path); 
        console.log("Before adding URL");
        console.log(fileSystem);
        var name = window.prompt("Please enter a name for this web page.", "");
@@ -176,10 +190,11 @@ function saveURL(path) {
             if(del == false) {
               return;
             }
-         } else {
-             curDirCont[name] = newObj;
-             chrome.storage.sync.set({fskey : JSON.stringify(fileSystem)});
          }
+         curDirCont[name] = newObj;
+         chrome.storage.sync.set({fskey : JSON.stringify(fileSystem)}, function() {
+          console.log("This was stored");
+         });
          curDirCont = parseFilesystemContents(fileSystem, path); 
          console.log("After adding URL");
          console.log(fileSystem);
