@@ -211,6 +211,20 @@ function listenFsItem(){
 
 }
 
+function moveUpDir() {
+	chrome.storage.sync.get(cdkey, function(cdobj) {
+		var path = cdobj[cdkey];
+		//if the current directory is root, then don't do anything
+		if(path === "/") return;
+		if(path[path.length - 1] !== "/") {
+			console.log("Error in moveUpDir: " + path + " does not end with a '/'");
+			return;
+		}
+		//chop off the last '/'
+		path = path.substr(0, 
+	});
+}
+
 /**
  * @param {string} searchTerm - Search term for Google Image search.
  * @param {function(string,number,number)} callback - Called when an image has
