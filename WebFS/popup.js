@@ -55,7 +55,7 @@ function renderStatus(url) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-
+	
   $('#saveButton').click(function() {
     chrome.storage.sync.get(cdkey, saveURL);
     /*chrome.storage.sync.get("url", function(obj) {
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
   //renderCurrentDirectory("");
   //chrome.storage.sync.get(cdkey, renderCurrentDirectory);
   var obj = {};
-  obj[cdkey] = "/";
+  obj[cdkey] = "/dir1/";
   chrome.storage.sync.set(obj, function() {
     renderCurrentDirectory(obj[cdkey]);
   });
@@ -313,7 +313,14 @@ function moveUpDir() {
 			return;
 		}
 		//chop off the last '/'
-		path = path.substr(0, 
+		path = path.substr(0, path.length - 1);
+		var index = path.lastIndexOf("/");
+		path = path.substr(0, index + 1);
+		var obj = {};
+		obj[cdkey] = path;
+		chrome.storage.sync.set(obj, function() {
+			renderCurrentDirectory(path);
+		});
 	});
 }
 
