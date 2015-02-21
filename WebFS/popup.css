@@ -1,10 +1,23 @@
 body: {
-	background-color: #C2C2C2;
+	border: solid black 1px;
+	padding: 2px;
+	color: #999999;
 	min-width: 200px;
 	height: 400px;
 }
 
 #menuBar {
-	background-color: #57FF6A;
-	min-width: 100px;
+	background-color: #999999;
+	/*padding: 5px;*/
+	min-width: 400px;
+}
+
+#fsDisplay{
+	border: inset 1px;
+	padding: 5px;
+}
+
+table{
+	width: 100%;
+	border: solid black 1px;
 }
