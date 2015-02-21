@@ -68,15 +68,35 @@ document.addEventListener('DOMContentLoaded', function() {
     });*/
   });
 
+  $('#mkdirButton').click(function() {
+    chrome.storage.sync.get(cdkey, createFolder);
+  });
+
 
   //chrome.storage.sync.clear();
   //renderCurrentDirectory("");
-  //chrome.storage.sync.get(cdkey, renderCurrentDirectory);
-  var obj = {};
+  chrome.storage.sync.get(cdkey, function(cdobj) {
+    //this will create the initial file system
+    console.log(cdobj);
+    if(isEmpty(cdobj)) {
+      var obj = {};
+      obj[cdkey] = "/";
+      var fs = {};
+      fs[fskey] = JSON.stringify({});
+      chrome.storage.sync.set(fs, function() {
+        chrome.storage.sync.set(obj, function() {
+          renderCurrentDirectory(obj[cdkey]);
+        })
+      });
+    } else {
+      renderCurrentDirectory(cdobj[cdkey]);
+    }
+  });
+  /*var obj = {};
   obj[cdkey] = "/dir1/";
   chrome.storage.sync.set(obj, function() {
     renderCurrentDirectory(obj[cdkey]);
-  });
+  });*/
   
   /*getCurrentTabUrl(function(url) {
     chrome.storage.sync.get('jsonFile', function(object) {
@@ -171,6 +191,7 @@ function renderCurrentDirectory(path){
 
   chrome.storage.sync.get(fskey, function(fileSystem) {
        console.log("fetched fs data");
+       console.log(fileSystem);
        var curDirCont = parseFilesystemContents(JSON.parse(fileSystem[fskey]), path);
        var count = 0;
        $("#contentsTable tr:not(#head_row)").remove();
@@ -190,6 +211,37 @@ function renderCurrentDirectory(path){
 
 }
 
+function createFolder(cdobj) {
+  var path = cdobj[cdkey];
+  chrome.storage.sync.get(fskey, function(fileSystem) {
+      fileSystem = JSON.parse(fileSystem[fskey]);
+       var curDirCont = parseFilesystemContents(fileSystem, path); 
+       var name = window.prompt("Please enter a name for this folder.", "");
+       if(!validName(name)) {
+         window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
+       } else {
+         var newObj = {
+            "type" : "directory",
+            "contents" : {}
+         };
+         if(curDirCont[name]) {
+            //prompt to delete existing file
+            var del = window.confirm("An item with that name already exists. Should we replace it? (***Careful! This will delete all contents if it is a folder***)");
+            if(del == false) {
+              return;
+            }
+         }
+         curDirCont[name] = newObj;
+         var obj = {};
+         obj[fskey] = JSON.stringify(fileSystem)
+         chrome.storage.sync.set(obj, function() {
+          renderCurrentDirectory(path);
+         });
+         curDirCont = parseFilesystemContents(fileSystem, path); 
+       }
+    });
+}
+
 //this function returns whether or not the passed in file name is valid or not
 function validName(name) {
   if(!name) return false;
@@ -203,8 +255,8 @@ function isEmpty(object) {
 }
 
 //this will get called when the save button is clicked and it will save the current URL into the current directory
-function saveURL(path) {
-  path = "/dir1/"; // remove this later. for testing purposes
+function saveURL(cdobj) {
+  var path = cdobj[cdkey];
   getCurrentTabUrl(function(url) {
     chrome.storage.sync.get(fskey, function(fileSystem) {
       console.log(fileSystem);
@@ -260,7 +312,7 @@ function saveURL(path) {
          };
          if(curDirCont[name]) {
             //prompt to delete existing file
-            var del = window.confirm("A file with that name already exists. Should we replace it?");
+            var del = window.confirm("An item with that name already exists. Should we replace it? (***Careful! This will delete all contents if it is a folder***)");
             if(del == false) {
               return;
             }
