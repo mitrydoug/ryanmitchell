@@ -178,7 +178,7 @@ function saveURL(path) {
             }
          } else {
              curDirCont[name] = newObj;
-             //chrome.storage.sync.set()
+             chrome.storage.sync.set({fskey : JSON.stringify(fileSystem)});
          }
          curDirCont = parseFilesystemContents(fileSystem, path); 
          console.log("After adding URL");
