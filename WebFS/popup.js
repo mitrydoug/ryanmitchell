@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
       renderCurrentDirectory(cdobj[cdkey]);
     }
   });
+  //
   /*var obj = {};
   obj[cdkey] = "/dir1/";
   chrome.storage.sync.set(obj, function() {
