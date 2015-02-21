@@ -56,7 +56,7 @@ function renderStatus(url) {
 
 document.addEventListener('DOMContentLoaded', function() {
 
-  $('#saveButton').onClick(function() {
+  $('#saveButton').click(function() {
     chrome.storage.sync.get(cdkey, saveURL);
   });
 
@@ -159,9 +159,9 @@ function saveURL(path) {
           }
         }
       };
-       var curDirCont = parseFileSystemContents(JSON.parse(fileSystem), path);
+       var curDirCont = parseFilesystemContents(fileSystem, path); //will be JSON.parse(fileSystem)
        console.log("Before adding URL");
-       console.log(fs);
+       console.log(fileSystem);
        var name = window.prompt("Please enter a name for this web page.", "");
        if(!validName(name)) {
          window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
@@ -180,9 +180,9 @@ function saveURL(path) {
              curDirCont[name] = newObj;
              //chrome.storage.sync.set()
          }
-         curDirCont = parseFileSystemContents(JSON.parse(fileSystem), path);
+         curDirCont = parseFilesystemContents(fileSystem, path); 
          console.log("After adding URL");
-         console.log(fs);
+         console.log(fileSystem);
        }
     });
   });
