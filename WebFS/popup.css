@@ -6,10 +6,33 @@ body: {
 	height: 400px;
 }
 
+table{
+	width: 100%;
+	border: solid black 1px;
+}
+
+/*tr {
+	border: solid black 1px;
+}*/
+
+td {
+	border: solid black 1px;
+	/*background-color: #999999;*/
+}
+
+div {
+	margin-bottom: 10px;
+}
+
 #menuBar {
 	background-color: #999999;
-	/*padding: 5px;*/
+	padding: 3px;
 	min-width: 400px;
+}
+
+#curDirLabel {
+	padding-left: 10px;
+	border: solid black 1px;;
 }
 
 #fsDisplay{
@@ -17,7 +40,12 @@ body: {
 	padding: 5px;
 }
 
-table{
-	width: 100%;
-	border: solid black 1px;
+.oddfile {
+	background-color: #A9B3D1;
+	padding: 3px;
+}
+
+.evenfile {
+	background-color: #7D8BBA;
+	padding: 3px;
 }
