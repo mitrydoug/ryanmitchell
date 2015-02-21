@@ -58,6 +58,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
   $('#saveButton').click(function() {
     chrome.storage.sync.get(cdkey, saveURL);
+    /*chrome.storage.sync.get("url", function(obj) {
+      console.log("The last URL was: " + obj["url"]);
+    });
+    getCurrentTabUrl(function(url) {
+      chrome.storage.sync.set({"url" : url}, function() {
+        console.log("Setting new URL");
+      })
+    });*/
   });
   //chrome.storage.sync.clear();
   //renderCurrentDirectory("");
@@ -153,8 +161,10 @@ function saveURL(path) {
   getCurrentTabUrl(function(url) {
     chrome.storage.sync.get(fskey, function(fileSystem) {
       console.log(fileSystem);
-      try {
-        fileSystem = JSON.parse(fileSystem);
+      fileSystem = fileSystem[fskey];
+      console.log(fileSystem);
+      /*try {
+        fileSystem = JSON.parse(fileSystem[fskey]);
       }
       catch(e) {
         fileSystem = {};
@@ -172,7 +182,24 @@ function saveURL(path) {
             }
           }
         };
-      }
+      }*/
+       if(fileSystem == undefined) {
+        console.log("Creating default dir");
+        fileSystem = {
+          "dir1": {
+            "type": "directory",
+            "contents" : {
+              "doop": {
+                "type": "directory",
+                "contents":{"wakaka": "bloop"}
+              }
+            }
+          }
+        };
+       }
+       else {
+        fileSystem = JSON.parse(fileSystem);
+       }
        var curDirCont = parseFilesystemContents(fileSystem, path); 
        console.log("Before adding URL");
        console.log(fileSystem);
@@ -192,7 +219,9 @@ function saveURL(path) {
             }
          }
          curDirCont[name] = newObj;
-         chrome.storage.sync.set({fskey : JSON.stringify(fileSystem)}, function() {
+         var obj = {};
+         obj[fskey] = JSON.stringify(fileSystem)
+         chrome.storage.sync.set(obj, function() {
           console.log("This was stored");
          });
          curDirCont = parseFilesystemContents(fileSystem, path); 
