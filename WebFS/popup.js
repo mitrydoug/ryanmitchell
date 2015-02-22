@@ -335,20 +335,26 @@ function saveURL(cdobj) {
 
 function renameItem(event, oldName) {
 	//var elem = $(event.target).value();
+  console.log(oldName);
+  console.log("did it submit?");
 	chrome.storage.sync.get(cdkey, function(cdobj) {
 		chrome.storage.sync.get(fskey, function(fsobj) {
-			var curDirCont = parseFilesystemContents(JSON.parse(fsobj[fskey]), cdobj[cdkey]);
-			var oldName = event.target.id.text //something like this
+      var fileSystem = JSON.parse(fsobj[fskey]);
+			var curDirCont = parseFilesystemContents(fileSystem, cdobj[cdkey]);
+      console.log("123 " + JSON.stringify(curDirCont));
 			if(!curDirCont[oldName]) {
 				console.log("Error in renameItem: " + oldName + "does not exist in current directory");
 				return;
 			}
 			var obj = curDirCont[oldName];
 			delete curDirCont[oldName];
-			var newName = $(event.target).value();
+      console.log("456 " + JSON.stringify(curDirCont));
+			var newName = $("#renamingInput").val();
+      console.log("newName: " + newName + "\n obj: " + JSON.stringify(obj));
 			curDirCont[newName] = obj;
+      console.log("dfg " + JSON.stringify(fileSystem));
 			var newFS = {};
-			newFS[fskey] = JSON.stringify(fsobj[fskey]);
+			newFS[fskey] = JSON.stringify(fileSystem);
 			chrome.storage.sync.set(newFS, function() {
 				renderCurrentDirectory(cdobj[cdkey]);
 			});
@@ -413,11 +419,13 @@ function listenFsItem(event){
   if(elem.prop("tagName") === "P" && rowElem.hasClass("selected")){
     console.log("removing case");
     var name = elem.text();
+    console.log("name: " + name);
     elem.remove();
-    var textIn = $("<input type=\"input\" value=\"" + name + "\"></input>");
+    var textIn = $("<form><input id=\"renamingInput\"type=\"input\" value=\"" + name + "\"></input></form>");
     rowElem.children("td:first").append(textIn);
-    textIn.select();
+    textIn.children("input:first").select();
     textIn.submit(function(event){
+      console.log("In pseudo handler");
       renameItem(event, name);
     });
     return;
