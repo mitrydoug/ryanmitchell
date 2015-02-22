@@ -303,7 +303,7 @@ function saveURL(cdobj) {
        }
        var curDirCont = parseFilesystemContents(fileSystem, path); 
        console.log("Before adding URL");
-       console.log(fileSystem);
+	   console.log(fileSystem);
        var name = window.prompt("Please enter a name for this web page.", "");
        if(!validName(name)) {
          window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
@@ -333,7 +333,8 @@ function saveURL(cdobj) {
   });
 }
 
-function renameItem(event) {
+function renameItem(event, oldName) {
+	//var elem = $(event.target).value();
 	chrome.storage.sync.get(cdkey, function(cdobj) {
 		chrome.storage.sync.get(fskey, function(fsobj) {
 			var curDirCont = parseFilesystemContents(JSON.parse(fsobj[fskey]), cdobj[cdkey]);
@@ -344,7 +345,7 @@ function renameItem(event) {
 			}
 			var obj = curDirCont[oldName];
 			delete curDirCont[oldName];
-			var newName = event.target.id.text //something like this
+			var newName = $(event.target).value();
 			curDirCont[newName] = obj;
 			var newFS = {};
 			newFS[fskey] = JSON.stringify(fsobj[fskey]);
