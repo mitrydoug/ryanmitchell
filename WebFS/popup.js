@@ -375,6 +375,11 @@ function renderCurrentDirectory(path){
        }
 	   for(var i = 0; i < fileArray.length; i++){
 	      var key = Object.keys(fileArray[i]);
+		  var endOfString = "<td>" + fileArray[i][key]["type"] + "</td></tr>";
+		  if(path === "/queue/") {
+			var date = new Date(fileArray[i][key]["time_stamp"] * 1000);
+			endOfString = "<td>" + date.toLocaleString() + "</td></tr>";
+		  }
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + " fileImg\""
                               + " srcName=\"" + key + "\">"
@@ -382,7 +387,7 @@ function renderCurrentDirectory(path){
 							  + "<p>" + key + "</p>" 
                               +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
                               + "</td>"
-                              + "<td>" + fileArray[i][key]["type"] + "</td></tr>");
+                              + endOfString);
           $("#contentsTable tr:last").after(tableElem);
           tableElem.dblclick(fireFsItem);
           tableElem.click(listenFsItem);
