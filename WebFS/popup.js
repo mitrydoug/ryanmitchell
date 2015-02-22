@@ -279,6 +279,47 @@ function saveURL(path) {
   });
 }
 
+function renameItem(event) {
+	chrome.storage.sync.get(cdkey, function(cdobj) {
+		chrome.storage.sync.get(fskey, function(fsobj) {
+			var curDirCont = parseFilesystemContents(JSON.parse(fsobj[fskey]), cdobj[cdkey]);
+			var oldName = event.target.id.text //something like this
+			if(!curDirCont[oldName]) {
+				console.log("Error in renameItem: " + oldName + "does not exist in current directory");
+				return;
+			}
+			var obj = curDirCont[oldName];
+			delete curDirCont[oldName];
+			var newName = event.target.id.text //something like this
+			curDirCont[newName] = obj;
+			var newFS = {};
+			newFS[fskey] = JSON.stringify(fsobj[fskey]);
+			chrome.storage.sync.set(newFS, function() {
+				renderCurrentDirectory(cdobj[cdkey]);
+			});
+		});	
+	});	
+}
+
+function deleteItem(event) {
+	chrome.storage.sync.get(cdkey, function(cdobj) {
+		chrome.storage.sync.get(fskey, function(fsobj) {
+			var curDirCont = parseFilesystemContents(JSON.parse(fsobj[fskey]), cdobj[cdkey]);
+			var name = event.target.id.text //something like this
+			if(!curDirCont[name]) {
+				console.log("Error in renameItem: " + name + "does not exist in current directory");
+				return;
+			}
+			delete curDirCont[oldName];
+			var newFS = {};
+			newFS[fskey] = JSON.stringify(fsobj[fskey]);
+			chrome.storage.sync.set(newFS, function() {
+				renderCurrentDirectory(cdobj[cdkey]);
+			});
+		});	
+	});	
+}
+
 function listenDirItem(event){
   console.log($(event.target).attr("dirName"));
 }
