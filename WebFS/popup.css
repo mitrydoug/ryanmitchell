@@ -1,6 +1,5 @@
+
 body {
-	padding: 0px;
-	margin: 0px;
 	padding: 5px;
 	background-color: #300000;
 	width: 750px;
@@ -216,3 +215,4 @@ p {
 	cursor: default;
 	color: #DE9999;
 }
+

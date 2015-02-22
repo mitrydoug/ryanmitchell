@@ -334,6 +334,7 @@ function renderCurrentDirectory(path){
         if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) < parseInt(b[Object.keys(b)[0]]["time_stamp"])) return -1;
         if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) > parseInt(b[Object.keys(b)[0]]["time_stamp"])) return 1;
       } else {
+        console.log("this is not the best");
   			if(Object.keys(a)[0].toUpperCase() < Object.keys(b)[0].toUpperCase()) return -1;
   			if(Object.keys(a)[0].toUpperCase() > Object.keys(b)[0].toUpperCase()) return 1;
       }
@@ -404,6 +405,7 @@ function createFolder(path, name) {
       fileSystem = JSON.parse(fileSystem[fskey]);
        var curDirCont = parseFilesystemContents(fileSystem, path); 
 	   console.log(curDirCont);
+        name = trimName(name);
        if(!validName(name)) {
          window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
        } else {
@@ -473,6 +475,7 @@ function saveURL(path, name) {
 		var favIconUrl = tab.favIconUrl;
 	    console.log(fileSystem);
 		var specType = getSrcType(url);
+        name = trimName(name);
 	    if(!name) return;
         if(!validName(name)) {
           window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
@@ -518,6 +521,12 @@ function renameItem(event, oldName) {
       var fileSystem = JSON.parse(fsobj[fskey]);
 			var curDirCont = parseFilesystemContents(fileSystem, cdobj[cdkey]);
       console.log("123 " + JSON.stringify(curDirCont));
+      var newName = $("#renamingInput").val();
+      newName = trimName(newName);
+      if(!validName(newName)){
+          window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
+          return;
+      }
 			if(!curDirCont[oldName]) {
 				console.log("Error in renameItem: " + oldName + "does not exist in current directory");
 				return;
@@ -525,7 +534,6 @@ function renameItem(event, oldName) {
 			var obj = curDirCont[oldName];
 			delete curDirCont[oldName];
       console.log("456 " + JSON.stringify(curDirCont));
-			var newName = $("#renamingInput").val();
       console.log("newName: " + newName + "\n obj: " + JSON.stringify(obj));
 			curDirCont[newName] = obj;
       console.log("dfg " + JSON.stringify(fileSystem));
