@@ -53,14 +53,14 @@ function httpGet(theUrl) {
     return xmlHttp.responseText;
 }
 
-function queueItem(path, name, url) {
+function queueItem(name, url) {
   console.log("yesyesyes");
   chrome.storage.sync.get(fskey, function(fileSystem) {
 	  console.log(fileSystem);
 	  fileSystem = fileSystem[fskey];
 	  console.log(fileSystem);
 	  fileSystem = JSON.parse(fileSystem);
-	  var curDirCont = parseFilesystemContents(fileSystem, path); 
+	  var curDirCont = parseFilesystemContents(fileSystem, "/queue/"); 
 	  console.log("Before adding URL");
 	    console.log(fileSystem);
 	    if(!name) return;
@@ -69,7 +69,8 @@ function queueItem(path, name, url) {
 	    } else {
 	      var newObj = {
 	        "type" : "url",
-	        "url" : url
+	        "url" : url,
+	        "time_stamp": String((new Date()).getTime() / 1000)
 	     };
 	     if(curDirCont[name]) {
 	        //prompt to delete existing file
@@ -82,9 +83,6 @@ function queueItem(path, name, url) {
 	     var obj = {};
 	     obj[fskey] = JSON.stringify(fileSystem)
 	     chrome.storage.sync.set(obj);
-	     curDirCont = parseFilesystemContents(fileSystem, path); 
-	     console.log("After adding URL");
-	     console.log(fileSystem);
 	   }
 	});
 }
@@ -104,7 +102,7 @@ function addToQueue(info, tab){
 			console.log(pageHtml);
 			console.log("index: " + i);
 			console.log("name: " + name);
-			queueItem("/queue/", name, info["linkUrl"]);
+			queueItem(name, info["linkUrl"]);
 		});
 	});
 }
