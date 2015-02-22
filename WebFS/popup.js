@@ -60,35 +60,33 @@ function renderStatus(url) {
 document.addEventListener('DOMContentLoaded', function() {
 	
   $('#saveButton').click(function(){
-    $("#saveFormInput").blur(function() {
+    $("#saveInput").blur(function() {
        $("#saveFalldown").css("display", "none");
     });
     $("#saveFalldown").css("display", "inline-block");
-    $("#saveFormInput").focus();
+    $("#saveInput").focus();
   });
-  /*function() {
-    chrome.storage.sync.get(cdkey, saveURL);
-    /*chrome.storage.sync.get("url", function(obj) {
-      console.log("The last URL was: " + obj["url"]);
-    });
-    getCurrentTabUrl(function(url) {
-      chrome.storage.sync.set({"url" : url}, function() {
-        console.log("Setting new URL");
-      })
-    });*/
 
   $('#mkdirButton').click(function() {
-    $("#createFormInput").blur(function() {
+    $("#createInput").blur(function() {
        $("#createFalldown").css("display", "none");
     });
     $("#createFalldown").css("display", "inline-block");
-    $("#createFormInput").focus();
+    $("#createInput").focus();
     /*chrome.storage.sync.get(cdkey, createFolder);*/
   });
 
-  $("#saveUrlForm").submit(saveFormHandler);
+  $("#saveInput").keypress(function(e){
+    if(e.which === 13){
+      saveFormHandler($("#saveInput").val());
+    }
+  });
 
-  $("#createForm").submit(createFormHandler);
+  $("#createInput").keypress(function(e){
+    if(e.which === 13){
+      createFormHandler($("#createInput").val());
+    }
+  });
 
   //chrome.storage.sync.clear();
   //renderCurrentDirectory("");
@@ -208,7 +206,9 @@ function renderCurrentDirectory(path){
 }
 
 function createFolder(path, name) {
+  console.log("in callback for sync get");
   chrome.storage.sync.get(fskey, function(fileSystem) {
+    console.log("2 in callback for sync get");
       fileSystem = JSON.parse(fileSystem[fskey]);
        var curDirCont = parseFilesystemContents(fileSystem, path); 
        if(!validName(name)) {
@@ -227,7 +227,7 @@ function createFolder(path, name) {
          }
          curDirCont[name] = newObj;
          var obj = {};
-         obj[fskey] = JSON.stringify(fileSystem)
+         obj[fskey] = JSON.stringify(fileSystem);
          chrome.storage.sync.set(obj, function() {
           renderCurrentDirectory(path);
          });
@@ -249,6 +249,7 @@ function isEmpty(object) {
 
 //this will get called when the save button is clicked and it will save the current URL into the current directory
 function saveURL(path, name) {
+  console.log("yesyesyes");
   getCurrentTabUrl(function(url) {
 	console.log("Not getting here");
     chrome.storage.sync.get(fskey, function(fileSystem) {
@@ -471,18 +472,20 @@ function moveUpDir() {
 	});
 }
 
-function saveFormHandler(event) {
-  var name = $("#saveFormInput").val();
+function saveFormHandler(name) {
+  $("#saveFalldown").css("display", "none");
+  $("#saveInput").attr("value", "");
   chrome.storage.sync.get(cdkey, function(cdobj){
     console.log("here");
     saveURL(cdobj[cdkey], name);
   });
 }
 
-function createFormHandler(event) {
-  var name = $("#createFormInput").val();
+function createFormHandler(name) {
+  $("#createFalldown").css("display", "none");
+  $("#createInput").attr("value", "");
   chrome.storage.sync.get(cdkey, function(cdobj){
-    console.log("here");
+    console.log("new here: " + name);
     createFolder(cdobj[cdkey], name);
   });
 }
