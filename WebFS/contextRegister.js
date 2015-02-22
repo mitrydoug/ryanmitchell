@@ -100,8 +100,12 @@ function addToQueue(info, tab){
 				pageHtml.substr(i).indexOf("<") -
 					pageHtml.substr(i).indexOf(">") - 1);
 			console.log(pageHtml);
+			console.log("looking for: " + info["linkUrl"].substr(info["linkUrl"].lastIndexOf("/") + 1));
 			console.log("index: " + i);
 			console.log("name: " + name);
+			if(info["linkUrl"].substr(info["linkUrl"].lastIndexOf("/") + 1).length < name.length){
+				name = info["linkUrl"].substr(info["linkUrl"].lastIndexOf("/") + 1);
+			}
 			queueItem(name, info["linkUrl"]);
 		});
 	});

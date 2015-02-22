@@ -153,12 +153,12 @@ function parseFilesystemContents(fileSystemContents, path){
 }
 
 function dequeue(){
-  chrome.storage.sync.get(fbkey, function(fsobj){
-    var filesystem = JSON.parse(fsobj[fbkey]);
+  chrome.storage.sync.get(fskey, function(fsobj){
+    var filesystem = JSON.parse(fsobj[fskey]);
     var queueCont = parseFilesystemContents(filesystem, "/queue/");
     var urgent = "";
     for(key in queueCont){
-      if(urgent === "" || queueCont[urgent]["time_stamp"] > queueCont[key]["time_stamp"]){
+      if(urgent === "" || queueCont[urgent]["time_stamp"] >  queueCont[key]["time_stamp"]){
           urgent = key;
       }
     }
@@ -198,15 +198,6 @@ function openSelected() {
 				chrome.storage.sync.set(newFS);
 			}
 		});
-	});
-}
-
-//function queueItem(path, name, url)
-function dequeue() {
-	chrome.storage.sync.get(fskey, function(fsobj) {
-		var fileSystem = JSON.parse(fsobj[fskey]);
-		var queueCont = parseFilesystemContents(fileSystem, "/queue/");
-		//add stuff here
 	});
 }
 
@@ -324,9 +315,12 @@ function renderCurrentDirectory(path){
 			return 0;
 	   });
 	   fileArray.sort(function(a, b){
-      if(path == "/queue/"){
-        if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) < parseInt(b[Object.keys(b)[0]]["time_stamp"])) return -1;
-        if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) > parseInt(b[Object.keys(b)[0]]["time_stamp"])) return 1;
+      if(path === "/queue/"){
+        if(a[Object.keys(a)[0]]["time_stamp"] == undefined || b[Object.keys(b)[0]]["time_stamp"] === undefined){
+          console.log("undefined timestamps");
+        }
+        if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) > parseInt(b[Object.keys(b)[0]]["time_stamp"])) return -1;
+        if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) < parseInt(b[Object.keys(b)[0]]["time_stamp"])) return 1;
       } else {
   			if(Object.keys(a)[0].toUpperCase() < Object.keys(b)[0].toUpperCase()) return -1;
   			if(Object.keys(a)[0].toUpperCase() > Object.keys(b)[0].toUpperCase()) return 1;
