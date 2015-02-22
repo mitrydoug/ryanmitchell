@@ -149,17 +149,10 @@ function renderCurrentDirectory(path){
   console.log(pathTokens);
   $("#curDirRow td").remove();
   var backButton = $("<td id=\"backButton\" class=\"evenmarker\"><img id=\"backImg\" class=\"backButton\" src=\"backButton.png\"></img></td>");
-  //var backButtonHover = $("<td id=\"backButtonHover\" class=\"evenmarker\"><img class = \"backButton\" src = \"backButtonHover.png\"></img></td>");
-  //backButton.css("display", "inline-block");
-  //backButtonHover.css("display", "none");
   var rootFolder = $("<td id=\"diritem1\" class=\"oddmarker\" dirName=\"/\">/</td>");
   backButton.hover(function() {
-	//backButton.css("display", "none");
-    //backButtonHover.css("display", "inline-block");
 	$("#backImg").attr("src", "backButtonHover.png");
   }, function() {
-	//backButton.css("display", "inline-block");
-    //backButtonHover.css("display", "none");
 	$("#backImg").attr("src", "backButton.png");
   });
   backButton.click(listenDirItem);
