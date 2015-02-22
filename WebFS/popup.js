@@ -18,8 +18,7 @@ function getCurrentTabUrl(callback) {
   // https://developer.chrome.com/extensions/tabs#method-query
   var queryInfo = {
     active: true,
-    //currentWindow: true*/
-	lastFocusedWindow: true
+    currentWindow: true
   };
 
   chrome.tabs.query(queryInfo, function(tabs) {
@@ -69,16 +68,24 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   $('#mkdirButton').click(function() {
-    $("#createInput").blur(function() {
-       $("#createFalldown").css("display", "none");
-    });
-    $("#createFalldown").css("display", "inline-block");
-    $("#createInput").focus();
-    /*chrome.storage.sync.get(cdkey, createFolder);*/
+    chrome.storage.sync.get(cdkey, function(cdobj) {
+		if(cdobj[cdkey] === "/queue/") {
+			window.alert("Can't create folders in the queue.");
+		} else {
+			$("#createInput").blur(function() {
+			   $("#createFalldown").css("display", "none");
+			});
+			$("#createFalldown").css("display", "inline-block");
+			$("#createInput").focus();
+			/*chrome.storage.sync.get(cdkey, createFolder);*/
+		}
+	});
   });
 
   $('#openSelected').click(openSelected);
-  $('#deleteSelected').click(deleteSelected);
+  $('#deleteSelected').click(deleteSelected); 
+  $('#dequeueButton').click(dequeue);
+  $('#queueButton').click(queueCurrentPage);
 	
   $("#saveInput").keypress(function(e){
     if(e.which === 13){
@@ -160,17 +167,60 @@ function openSelected() {
 			for(var i = 0; i < keys.length; i++) {
 				if(curDirCont[keys[i]]["type"] === "url") {
 					chrome.tabs.create({url : curDirCont[keys[i]]["url"]});
+					if(path === "/queue/") delete curDirCont[keys[i]];
 				}
+			}
+			if(path === "/queue/") {
+				var newFS = {};
+				newFS[fskey] = JSON.stringify(fileSystem);
+				chrome.storage.sync.set(newFS);
 			}
 		});
 	});
 }
 
+//function queueItem(path, name, url)
+function dequeue() {
+	chrome.storage.sync.get(fskey, function(fsobj) {
+		var fileSystem = JSON.parse(fsobj[fskey]);
+		var queueCont = parseFilesystemContents(fileSystem, "/queue/");
+		//add stuff here
+	});
+}
+
+function queueCurrentPage() {
+	chrome.storage.sync.get(fskey, function(fsobj) {
+		var fileSystem = JSON.parse(fsobj[fskey]);
+		var queueCont = parseFilesystemContents(fileSystem, "/queue/");
+		var queryInfo = {
+			active: true,
+			currentWindow: true
+		  };
+
+		chrome.tabs.query(queryInfo, function(tabs) {
+			var tab = tabs[0];
+			var url = tab.url;
+			var title = tab.title;
+			console.assert(typeof url == 'string', 'tab.url should be a string');
+			var obj = {
+				"type": "url",
+				"url": url,
+				"time_stamp": String((new Date()).getTime() / 1000)
+			};
+			queueCont[title] = obj;
+			var newFS = {};
+			newFS[fskey] = JSON.stringify(fileSystem);
+			chrome.storage.sync.set(newFS, function() {
+				chrome.storage.sync.get(cdkey, function(cdobj) {
+					var path = cdobj[cdkey];
+					if(path === "/queue/") renderCurrentDirectory(path);
+				});
+			});
+		});
+	});
+}
+
 function deleteSelected() {
-	var del = window.confirm("Are you sure you want to delete the selected items? (***Careful! This will delete all contents if any are a folder***)");
-	if(del == false) {
-	  return;
-	}
 	chrome.storage.sync.get(cdkey, function(cdobj) {
 		chrome.storage.sync.get(fskey, function(fsobj) {
 			var fileSystem = JSON.parse(fsobj[fskey]);
@@ -183,6 +233,13 @@ function deleteSelected() {
 				if($(this).hasClass("selected")) keys.push($(this).attr("srcName"));
 				if($(this).attr("srcName") === "queue") $(this).removeClass("selected"); //un-selects queue since you can't delete it
 			});
+			
+			if(keys.length > 0) {
+				var del = window.confirm("Are you sure you want to delete the selected items? (***Careful! This will delete all contents if any are a folder***)");
+				if(del == false) {
+				  return;
+				}
+			}
 			for(var i = 0; i < keys.length; i++) {
 				if(curDirCont[keys[i]]["type"] !== "queue") {
 					delete curDirCont[keys[i]];
@@ -533,7 +590,8 @@ function fireFsItem(event){
   var name = elem.attr("srcName");
   chrome.storage.sync.get(cdkey, function(cdobj) {
     chrome.storage.sync.get(fskey, function(fsobj) {
-      var curDirCont = parseFilesystemContents(JSON.parse(fsobj[fskey]), cdobj[cdkey]);
+	  var fileSystem = JSON.parse(fsobj[fskey]);
+      var curDirCont = parseFilesystemContents(fileSystem, cdobj[cdkey]);
       console.log(name);
       console.log(curDirCont);
       console.log(curDirCont[name]);
@@ -548,6 +606,10 @@ function fireFsItem(event){
       //if url item, open page in new tab
       else if(curDirCont[name]["type"] === "url") {
         chrome.tabs.create({url : curDirCont[name]["url"]});
+		if(path === "/queue/") delete curDirCont[name];
+		var newFS = {};
+		newFS[fskey] = JSON.stringify(fileSystem);
+		chrome.storage.sync.set(newFS);
       }
       else {
         console.log("Error in listenFsItem: " + curDirCont[name] + " is neither a directory nor url.");
