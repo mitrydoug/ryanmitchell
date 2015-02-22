@@ -94,7 +94,12 @@ document.addEventListener('DOMContentLoaded', function() {
       var obj = {};
       obj[cdkey] = "/";
       var fs = {};
-      fs[fskey] = JSON.stringify({});
+      fs[fskey] = JSON.stringify({
+        "queue": {
+          "type": "queue",
+          "contents": {}
+        }
+      });
       chrome.storage.sync.set(fs, function() {
         chrome.storage.sync.set(obj, function() {
           renderCurrentDirectory(obj[cdkey]);
@@ -134,22 +139,6 @@ function parseFilesystemContents(fileSystemContents, path){
 }
 
 function renderCurrentDirectory(path){
-
-  /*var fs = {
-    "dir1": {
-      "type": "directory",
-      "contents" : {
-        "doop": {
-          "type": "directory",
-          "contents":{"wakaka": "bloop"}
-        }
-        "google" : {
-          "type": "url",
-          "url": "https://www.google.com/?gws_rd=ssl"
-        }
-      }
-    }
-  };*/
 
   //console.log(parseFilesystemContents(fs, pat));
   console.log("rendering: " + path);
@@ -422,7 +411,7 @@ function fireFsItem(event){
       console.log(name);
       console.log(curDirCont);
       console.log(curDirCont[name]);
-      if(curDirCont[name]["type"] === "directory") {
+      if(curDirCont[name]["type"] === "directory" || curDirCont[name]["type"] === "queue") {
         var obj = {};
         obj[cdkey] = cdobj[cdkey] + name + "/";
         chrome.storage.sync.set(obj, function() {

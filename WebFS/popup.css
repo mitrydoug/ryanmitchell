@@ -25,6 +25,8 @@ p {
 
 td {
 	border-right: solid black 3px;
+	font-family: "Verdana", serif, normal;
+	font-size: 20px;
 }
 
 #head_row {
