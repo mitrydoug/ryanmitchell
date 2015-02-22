@@ -1,3 +1,14 @@
+Skip to content
+Sign up Sign in This repository
+Explore
+Features
+Enterprise
+Blog
+ Watch 2  Star 0  Fork 0 mitrydoug/ryanmitchell
+ branch: master  ryanmitchell/WebFS/popup.css
+mitrydougmitrydoug 31 minutes ago Implemented queue current page. Working on deleting items when they a…
+2 contributors rhermsmitrydoug
+194 lines (161 sloc)  2.583 kb RawBlameHistory   
 body: {
 	border: solid black 1px;
 	padding: 0px;
@@ -182,7 +193,7 @@ td {
 }
 
 #saveFalldown {
-	background-color: ;
+	background-color: #520000;
 	cursor: default;
 	color: #FF5757;
 }
