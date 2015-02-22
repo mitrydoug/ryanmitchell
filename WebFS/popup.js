@@ -246,7 +246,6 @@ function createFolder(cdobj) {
 
 //this function returns whether or not the passed in file name is valid or not
 function validName(name) {
-  if(!name) return false;
   if(name.indexOf("/") > -1) return false;
   if(name.length > 32) return false;
   return true;
@@ -305,6 +304,7 @@ function saveURL(cdobj) {
        console.log("Before adding URL");
 	   console.log(fileSystem);
        var name = window.prompt("Please enter a name for this web page.", "");
+	   if(!name) return;
        if(!validName(name)) {
          window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
        } else {
