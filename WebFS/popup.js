@@ -277,7 +277,11 @@ function deleteSelected() {
 function renderCurrentDirectory(path){
 
   console.log("rendering: " + path);
-
+  if(path === "/queue/") {
+	$("#head_row").find("td:last").text("Timestamp");
+  } else {
+	$("#head_row").find("td:last").text("Type");
+  }
   var pathTokens = path.split("/").slice(1, path.split("/").length - 1);
   console.log(pathTokens);
   $("#curDirRow td").remove();
@@ -325,8 +329,10 @@ function renderCurrentDirectory(path){
         if(a[Object.keys(a)[0]]["time_stamp"] == undefined || b[Object.keys(b)[0]]["time_stamp"] === undefined){
           console.log("undefined timestamps");
         }
-        if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) > parseInt(b[Object.keys(b)[0]]["time_stamp"])) return -1;
-        if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) < parseInt(b[Object.keys(b)[0]]["time_stamp"])) return 1;
+		console.log(parseInt(a[Object.keys(a)[0]]["time_stamp"]));
+		console.log(parseInt(b[Object.keys(b)[0]]["time_stamp"]));
+        if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) < parseInt(b[Object.keys(b)[0]]["time_stamp"])) return -1;
+        if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) > parseInt(b[Object.keys(b)[0]]["time_stamp"])) return 1;
       } else {
   			if(Object.keys(a)[0].toUpperCase() < Object.keys(b)[0].toUpperCase()) return -1;
   			if(Object.keys(a)[0].toUpperCase() > Object.keys(b)[0].toUpperCase()) return 1;
@@ -452,10 +458,11 @@ function saveURL(path, name) {
         if(!validName(name)) {
           window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
         } else {
-          var newObj = {
+        var newObj = {
             "type" : "url",
             "url" : url
          };
+		 if(path === "/queue/") newObj["time_stamp"] = String((new Date()).getTime() / 1000);
          if(curDirCont[name]) {
             //prompt to delete existing file
             var del = window.confirm("An item with that name already exists. Should we replace it? (***Careful! This will delete all contents if it is a folder***)");
