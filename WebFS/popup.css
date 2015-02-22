@@ -1,0 +1,104 @@
+body: {
+	border: solid black 1px;
+	padding: 2px;
+	color: #999999;
+	min-width: 200px;
+	height: 400px;
+}
+
+/*tr {
+	border: solid black 1px;
+}*/
+
+#contentsTable > td {
+	border: solid black 1px;
+	/*background-color: #999999;*/
+}
+
+div {
+	margin-bottom: 10px;
+}
+
+p {
+	padding: 0px;
+	margin: 0px;
+}
+
+
+#contentsTable{
+	width: 100%;
+	border: solid black 1px;
+}
+
+#menuBar {
+	background-color: #999999;
+	padding: 3px;
+	min-width: 400px;
+}
+
+#curDirLabel {
+	padding-left: 10px;
+	border: solid black 1px;;
+}
+
+#fsDisplay{
+	border: inset 1px;
+	padding: 5px;
+}
+
+.oddfile {
+	background-color: #A9B3D1;
+	padding: 3px;
+}
+
+.oddfile.selected {
+	background-color: #44D482;
+}
+
+.oddfile.selected:hover {
+	background-color: #8C1D1D;
+}
+
+.oddfile:hover {
+	background-color: red;
+}
+
+.evenfile {
+	background-color: #7D8BBA;
+}
+
+.evenfile.selected{
+	background-color: #269945;
+}
+
+.evenfile.selected:hover {
+	background-color: #8C1D1D;
+}
+
+.evenfile:hover {
+	background-color: red;
+}
+
+.oddmarker{
+	padding-top: 3px;
+	padding-bottom: 3px;
+	padding-left: 5px;
+	padding-right: 0px;
+	background-color: #A9B3D1;
+}
+
+.oddmarker:hover {
+	background-color: red;
+}
+
+.evenmarker{
+	padding-top: 3px;
+	padding-bottom: 3px;
+	padding-left: 5px;
+	padding-right: 0px;
+	background-color: #7D8BBA;
+}
+
+.evenmarker:hover {
+	background-color: red;
+}
