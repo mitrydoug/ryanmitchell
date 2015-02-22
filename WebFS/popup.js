@@ -142,11 +142,23 @@ function renderCurrentDirectory(path){
   var pathTokens = path.split("/").slice(1, path.split("/").length - 1);
   console.log(pathTokens);
   $("#curDirRow td").remove();
-  var backArrows = $("<td id=\"backArrow\" class=\"evenmarker\"> << </td>");
+  var backButton = $("<td id=\"backButton\" class=\"evenmarker\"><img id=\"backImg\" class=\"backButton\" src=\"backButton.png\"></img></td>");
+  //var backButtonHover = $("<td id=\"backButtonHover\" class=\"evenmarker\"><img class = \"backButton\" src = \"backButtonHover.png\"></img></td>");
+  //backButton.css("display", "inline-block");
+  //backButtonHover.css("display", "none");
   var rootFolder = $("<td id=\"diritem1\" class=\"oddmarker\" dirName=\"/\">/</td>");
-  backArrows.click(listenDirItem);
+  backButton.hover(function() {
+	//backButton.css("display", "none");
+    //backButtonHover.css("display", "inline-block");
+	$("#backImg").attr("src", "backButtonHover.png");
+  }, function() {
+	//backButton.css("display", "inline-block");
+    //backButtonHover.css("display", "none");
+	$("#backImg").attr("src", "backButton.png");
+  });
+  backButton.click(listenDirItem);
   rootFolder.click(listenDirItem);
-  $("#curDirRow").append(backArrows);
+  $("#curDirRow").append(backButton);
   $("#curDirRow").append(rootFolder);
   var count = 2;
   for(index in pathTokens){

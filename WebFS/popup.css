@@ -60,6 +60,15 @@ td {
 	padding: 0px;
 }
 
+#backButton {
+	background-color: black;
+}
+
+.backButton {
+	width: 32px;
+	height: 32px;
+}
+
 .iconImg {
 	width : 19px;
 	height : 19px;
