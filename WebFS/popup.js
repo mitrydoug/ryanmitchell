@@ -56,7 +56,14 @@ function renderStatus(url) {
 
 document.addEventListener('DOMContentLoaded', function() {
 	
-  $('#saveButton').click(function() {
+  $('#saveButton').click(function(){
+    $("#saveFormInput").blur(function() {
+       $("#saveFalldown").css("display", "none");
+    });
+    $("#saveFalldown").css("display", "inline-block");
+    $("#saveFormInput").focus();
+  });
+  /*function() {
     chrome.storage.sync.get(cdkey, saveURL);
     /*chrome.storage.sync.get("url", function(obj) {
       console.log("The last URL was: " + obj["url"]);
@@ -66,12 +73,19 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Setting new URL");
       })
     });*/
-  });
 
   $('#mkdirButton').click(function() {
-    chrome.storage.sync.get(cdkey, createFolder);
+    $("#createFormInput").blur(function() {
+       $("#createFalldown").css("display", "none");
+    });
+    $("#createFalldown").css("display", "inline-block");
+    $("#createFormInput").focus();
+    /*chrome.storage.sync.get(cdkey, createFolder);*/
   });
 
+  $("#saveUrlForm").submit(saveFormHandler);
+
+  $("#createForm").submit(createFormHandler);
 
   //chrome.storage.sync.clear();
   //renderCurrentDirectory("");
@@ -92,34 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
       renderCurrentDirectory(cdobj[cdkey]);
     }
   });
-  //
-  /*var obj = {};
-  obj[cdkey] = "/dir1/";
-  chrome.storage.sync.set(obj, function() {
-    renderCurrentDirectory(obj[cdkey]);
-  });*/
-  
-  /*getCurrentTabUrl(function(url) {
-    chrome.storage.sync.get('jsonFile', function(object) {
-      if(Object.keys(object).length === 0) {
-        console.log("Creating el root file");
-        var initialFile = {};
-        chrome.storage.sync.set({'jsonFile': url}, function() {
-          console.log("Set the initial file");
-        });
-      }
-      else {
-        renderStatus("Last URL: " + object['jsonFile']);
-        console.log("Need to update file since it exists");
-        chrome.storage.sync.set({'jsonFile': url}, function() {
-          console.log("Updated file");
-          chrome.storage.sync.clear(function() {
-            console.log("Clearing storage");
-          });
-        });
-      }
-    }); 
-  });*/
 });
 
 function parseFilesystemContents(fileSystemContents, path){
@@ -181,12 +167,11 @@ function renderCurrentDirectory(path){
   $("#curDirRow").append(rootFolder);
   var count = 2;
   for(index in pathTokens){
-    var dirItem = $("<td id=\"diritem" + count + "\" class=\"" + (count % 2 == 0 ? "evenmarker" : "oddmarker") + "\"" + 
+    var dirItem = $("<td id=\"diritem" + count + "\" class=\"" + (count % 2 == 0 ? "evenmarker" : "oddmarker") + " curDirToken\"" + 
                          "dirName=\"" + pathTokens[index] + "\">"
-                                      + pathTokens[index] + "</td>");
+                                      + pathTokens[index] + "/</td>");
     dirItem.click(listenDirItem);
     $("#curDirRow td:last").after(dirItem)
-    $("#curDirRow td:last").after("<td>/</td>");
     count++;
   }
 
@@ -259,7 +244,10 @@ function isEmpty(object) {
 
 //this will get called when the save button is clicked and it will save the current URL into the current directory
 function saveURL(cdobj) {
-  var path = cdobj[cdkey];
+
+
+
+  /*var path = cdobj[cdkey];
   getCurrentTabUrl(function(url) {
     chrome.storage.sync.get(fskey, function(fileSystem) {
       console.log(fileSystem);
@@ -296,7 +284,7 @@ function saveURL(cdobj) {
          console.log(fileSystem);
        }
     });
-  });
+  });*/
 }
 
 function renameItem(event, oldName) {
@@ -359,7 +347,7 @@ function listenDirItem(event){
     console.log(dirNum);
     var path = "";
     for(var i = 1; i <= dirNum; i++) {
-      path += $("#diritem" + i).text() + (i === 1 ? "" : "/");
+      path += $("#diritem" + i).text();
       console.log(path);
     }
     var obj = {};
@@ -388,29 +376,32 @@ function listenFsItem(event){
     console.log("removing case");
     var name = elem.text();
     console.log("name: " + name);
-    elem.remove();
+    elem.css("display","none");
     var textInput = $("<input id=\"renamingInput\"type=\"input\" value=\"" + name + "\"></input>"); 
     var textForm = $("<form></form>").append(textInput);
     rowElem.children("td:first").append(textForm);
     textInput.select();
     textInput.blur(function(e){
       textForm.remove();
-      rowElem.children("td:first").prepend("<p>" + name + "</p>");
+      elem.css("display", "inline");
+      //td.prepend("<input id=\"renamingInput\"type=\"input\" value=\"" + name + "\"></input>");
     });
-    textIn.submit(function(event){
+    textInput.submit(function(event){
       console.log("In pseudo handler");
       renameItem(event, name);
     });
-    return;
   } else if(elem.prop("tagName") == "IMG"){
     if(elem.attr("src") === "deleteIcon.png"){
       elem.remove();
       rowElem.children("td:first").append("<img src=\"deleteButton.png\" class=\"rightFloat\"></img>");
+      return;
     } else if(elem.attr("src") === "deleteButton.png"){
       deleteItem(rowElem.children("td:first").children("p:first").text());
       return;
     }
   }
+
+  $("#contentsTable").find("[src='deleteButton.png']").attr("src", "deleteIcon.png");
 
   //toggle the selected class
   if(rowElem.hasClass("selected")){
@@ -475,4 +466,12 @@ function moveUpDir() {
 			renderCurrentDirectory(path);
 		});
 	});
+}
+
+function saveFormHandler(event) {
+  var 
+}
+
+function createFormHandler(event) {
+
 }

@@ -8,8 +8,20 @@
   </head>
   <body>
     <div id="menuBar">
-		<button id="saveButton" class="button"> Save Url </button>
-		<button id="mkdirButton" class="button"> Create Folder </button>
+		<div id="saveButton" class="menuBarToken"> Save Url </div>
+		<div id="mkdirButton" class="menuBarToken"> Create Folder </div>
+	</div>
+	<div id="saveFalldown" style="display:none;">
+		<form id="saveUrlForm">
+			<p>Save Name: </p>
+			<input id="saveFormInput" type="text"></input>
+		</form>
+	</div>
+	<div id="createFalldown" style="display:none;">
+		<form id="createForm">
+			<p>Create Name: </p>
+			<input id="createFormInput" type="text"></input>
+		</form>
 	</div>
 	</div id="saveDiv">
 	<div id="fsDisplay">
@@ -19,7 +31,7 @@
 			</table>
 		</div>
 		<div id= "dirContents">
-			<table id="contentsTable">
+			<table id="contentsTable" cellspacing="0">
 				<tr id="head_row">
 					<td>
 						Name
@@ -28,46 +40,6 @@
 						Type
 					</td>
 				</tr>
-				<!--<tr class="evenfile" >
-					<td>
-						Cat Video
-					</td>
-					<td>
-						URL
-					</td>
-				</tr>
-				<tr class="oddfile" >
-					<td>
-						Cat Video
-					</td>
-					<td>
-						URL
-					</td>
-				</tr>
-				<tr class="evenfile" >
-					<td>
-						Cat Video
-					</td>
-					<td>
-						URL
-					</td>
-				</tr>
-				<tr class="oddfile" >
-					<td>
-						Cat Video
-					</td>
-					<td>
-						URL
-					</td>
-				</tr>
-				<tr class="evenfile" >
-					<td>
-						Cat Video
-					</td>
-					<td>
-						URL
-					</td>
-				</tr>-->
 			</table>
 		</div>
 	</div>
