@@ -365,15 +365,16 @@ function renameItem(event, oldName) {
 function deleteItem(event) {
 	chrome.storage.sync.get(cdkey, function(cdobj) {
 		chrome.storage.sync.get(fskey, function(fsobj) {
-			var curDirCont = parseFilesystemContents(JSON.parse(fsobj[fskey]), cdobj[cdkey]);
-			var name = event.target.id.text //something like this
+			var fileSystem = JSON.parse(fsobj[fskey]);
+			var curDirCont = parseFilesystemContents(fileSystem, cdobj[cdkey]);
+			var name = event.target.id.text //change this based on parameters like this
 			if(!curDirCont[name]) {
 				console.log("Error in renameItem: " + name + "does not exist in current directory");
 				return;
 			}
 			delete curDirCont[oldName];
 			var newFS = {};
-			newFS[fskey] = JSON.stringify(fsobj[fskey]);
+			newFS[fskey] = JSON.stringify(fileSystem);
 			chrome.storage.sync.set(newFS, function() {
 				renderCurrentDirectory(cdobj[cdkey]);
 			});
