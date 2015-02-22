@@ -68,15 +68,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });*/
   });
 
+  $('#mkdirButton').click(function() {
+    chrome.storage.sync.get(cdkey, createFolder);
+  });
+
 
   //chrome.storage.sync.clear();
   //renderCurrentDirectory("");
-  //chrome.storage.sync.get(cdkey, renderCurrentDirectory);
-  var obj = {};
+  chrome.storage.sync.get(cdkey, function(cdobj) {
+    //this will create the initial file system
+    console.log(cdobj);
+    if(isEmpty(cdobj)) {
+      var obj = {};
+      obj[cdkey] = "/";
+      var fs = {};
+      fs[fskey] = JSON.stringify({});
+      chrome.storage.sync.set(fs, function() {
+        chrome.storage.sync.set(obj, function() {
+          renderCurrentDirectory(obj[cdkey]);
+        })
+      });
+    } else {
+      renderCurrentDirectory(cdobj[cdkey]);
+    }
+  });
+  //
+  /*var obj = {};
   obj[cdkey] = "/dir1/";
   chrome.storage.sync.set(obj, function() {
     renderCurrentDirectory(obj[cdkey]);
-  });
+  });*/
   
   /*getCurrentTabUrl(function(url) {
     chrome.storage.sync.get('jsonFile', function(object) {
@@ -124,7 +145,7 @@ function parseFilesystemContents(fileSystemContents, path){
     }
   } else {
     console.log("malformed path in parseFilesystemContents: directory " + dirname + " does not exist");
-    return undefined; 
+    return undefined;
   }
 }
 
@@ -153,7 +174,7 @@ function renderCurrentDirectory(path){
   console.log(pathTokens);
   $("#curDirRow td").remove();
   var backArrows = $("<td id=\"backArrow\" class=\"evenmarker\"> << </td>");
-  var rootFolder = $("<td id=\"root\" class=\"oddmarker\" dirName=\"/\">/</td>");
+  var rootFolder = $("<td id=\"diritem1\" class=\"oddmarker\" dirName=\"/\">/</td>");
   backArrows.click(listenDirItem);
   rootFolder.click(listenDirItem);
   $("#curDirRow").append(backArrows);
@@ -171,6 +192,7 @@ function renderCurrentDirectory(path){
 
   chrome.storage.sync.get(fskey, function(fileSystem) {
        console.log("fetched fs data");
+       console.log(fileSystem);
        var curDirCont = parseFilesystemContents(JSON.parse(fileSystem[fskey]), path);
        var count = 0;
        $("#contentsTable tr:not(#head_row)").remove();
@@ -178,9 +200,10 @@ function renderCurrentDirectory(path){
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
                               + " srcName=\"" + key + "\">"
-                              + "<td>" + key + "</td>"
+                              + "<td><p>" + key + "</p></td>"
                               + "<td>" + curDirCont[key]["type"] + "</td></tr>");
           $("#contentsTable tr:last").after(tableElem);
+          tableElem.dblclick(fireFsItem);
           tableElem.click(listenFsItem);
           count++;
        }
@@ -188,6 +211,37 @@ function renderCurrentDirectory(path){
 
   //do the rendering here
 
+}
+
+function createFolder(cdobj) {
+  var path = cdobj[cdkey];
+  chrome.storage.sync.get(fskey, function(fileSystem) {
+      fileSystem = JSON.parse(fileSystem[fskey]);
+       var curDirCont = parseFilesystemContents(fileSystem, path); 
+       var name = window.prompt("Please enter a name for this folder.", "");
+       if(!validName(name)) {
+         window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
+       } else {
+         var newObj = {
+            "type" : "directory",
+            "contents" : {}
+         };
+         if(curDirCont[name]) {
+            //prompt to delete existing file
+            var del = window.confirm("An item with that name already exists. Should we replace it? (***Careful! This will delete all contents if it is a folder***)");
+            if(del == false) {
+              return;
+            }
+         }
+         curDirCont[name] = newObj;
+         var obj = {};
+         obj[fskey] = JSON.stringify(fileSystem)
+         chrome.storage.sync.set(obj, function() {
+          renderCurrentDirectory(path);
+         });
+         curDirCont = parseFilesystemContents(fileSystem, path); 
+       }
+    });
 }
 
 //this function returns whether or not the passed in file name is valid or not
@@ -203,8 +257,8 @@ function isEmpty(object) {
 }
 
 //this will get called when the save button is clicked and it will save the current URL into the current directory
-function saveURL(path) {
-  path = "/dir1/"; // remove this later. for testing purposes
+function saveURL(cdobj) {
+  var path = cdobj[cdkey];
   getCurrentTabUrl(function(url) {
     chrome.storage.sync.get(fskey, function(fileSystem) {
       console.log(fileSystem);
@@ -260,7 +314,7 @@ function saveURL(path) {
          };
          if(curDirCont[name]) {
             //prompt to delete existing file
-            var del = window.confirm("A file with that name already exists. Should we replace it?");
+            var del = window.confirm("An item with that name already exists. Should we replace it? (***Careful! This will delete all contents if it is a folder***)");
             if(del == false) {
               return;
             }
@@ -321,11 +375,47 @@ function deleteItem(event) {
 }
 
 function listenDirItem(event){
-  console.log($(event.target).attr("dirName"));
+  if(event.target.id === "backArrow") {
+    moveUpDir();
+  }
+  else {
+    console.log($(event.target).attr("dirName"));
+    var targetID = event.target.id;
+    var dirNum = event.target.id;
+    dirNum = dirNum.substr(dirNum.lastIndexOf("m") + 1); //since it is diritem#
+    console.log(dirNum);
+    var path = "";
+    for(var i = 1; i <= dirNum; i++) {
+      path += $("#diritem" + i).text() + (i === 1 ? "" : "/");
+      console.log(path);
+    }
+    var obj = {};
+    obj[cdkey] = path;
+    chrome.storage.sync.set(obj, function() {
+      renderCurrentDirectory(path);
+    });
+  }
+}
+
+function listenFsItem(event){
+  var elem = $(event.target);
+  console.log(elem.prop("tagName"));
+  if(elem.prop("tagName") === "TD"){
+    console.log("getting the parent");
+    elem = elem.parent("tr");
+  }
+  console.log(elem.attr("big"));
+  if(elem.hasClass("selected")){
+    console.log("setting to un-selected");
+    elem.removeClass("selected");
+  } else {
+    console.log("setting to selected");
+    elem.addClass("selected");
+  }
 }
 
 // Will get called when a fs item is clicked
-function listenFsItem(event){
+function fireFsItem(event){
   var elem = $(event.target);
   if(elem.prop("tagName") === "TD"){
     console.log("getting the parent");
@@ -369,7 +459,7 @@ function listenFsItem(event){
   }*/
 }
 
-/*function moveUpDir() {
+function moveUpDir() {
 	chrome.storage.sync.get(cdkey, function(cdobj) {
 		var path = cdobj[cdkey];
 		//if the current directory is root, then don't do anything
@@ -388,7 +478,7 @@ function listenFsItem(event){
 			renderCurrentDirectory(path);
 		});
 	});
-}*/
+}
 
 /**
  * @param {string} searchTerm - Search term for Google Image search.
