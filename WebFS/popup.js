@@ -210,6 +210,8 @@ function dequeue() {
 	});
 }
 
+
+
 function queueCurrentPage() {
 	chrome.storage.sync.get(fskey, function(fsobj) {
 		var fileSystem = JSON.parse(fsobj[fskey]);
@@ -223,6 +225,7 @@ function queueCurrentPage() {
 			var tab = tabs[0];
 			var url = tab.url;
 			var title = tab.title;
+			title = trimName(title);
 			console.assert(typeof url == 'string', 'tab.url should be a string');
 			var obj = {
 				"type": "url",
@@ -240,6 +243,11 @@ function queueCurrentPage() {
 			});
 		});
 	});
+}
+
+function trimName(name) {
+	if(name.length > 20) name = name.substr(0, 20) + "...";
+	return name;
 }
 
 function deleteSelected() {
@@ -341,9 +349,8 @@ function renderCurrentDirectory(path){
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
                               + " srcName=\"" + key + "\">"
-                              + "<td><img class=\"iconImg\" src=\"folderIcon.png\"></img>"
-							  + "<p>" + key + "</p>" 
-                              +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
+                              + "<td><img class=\"iconImg\" src=\"queueIcon.png\"></img>"
+							  + "<p>" + "ueue" + "</p>" 
                               + "</td>"
                               + "<td>" + curDirCont[key]["type"] + "</td></tr>");
           $("#contentsTable tr:last").after(tableElem);
