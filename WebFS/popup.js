@@ -358,18 +358,36 @@ function listenDirItem(event){
 
 function listenFsItem(event){
   var elem = $(event.target);
-  console.log(elem.prop("tagName"));
-  if(elem.prop("tagName") === "TD"){
-    console.log("getting the parent");
-    elem = elem.parent("tr");
+
+  var rowElem  = elem;
+
+  if(rowElem.prop("tagName") != "TR"){
+    rowElem = rowElem.closest("tr");
   }
-  console.log(elem.attr("big"));
-  if(elem.hasClass("selected")){
+
+  console.log(rowElem.prop("tagName"));
+  console.log(elem.prop("tagName"));
+
+  if(elem.prop("tagName") === "P" && rowElem.hasClass("selected")){
+    console.log("removing case");
+    var name = elem.text();
+    elem.remove();
+    var textIn = $("<input type=\"input\" value=\"" + name + "\"></input>");
+    rowElem.children("td:first").append(textIn);
+    textIn.select();
+    textIn.submit(function(event){
+      renameItem(event, name);
+    });
+    return;
+  }
+
+  //toggle the selected class
+  if(rowElem.hasClass("selected")){
     console.log("setting to un-selected");
-    elem.removeClass("selected");
+    rowElem.removeClass("selected");
   } else {
     console.log("setting to selected");
-    elem.addClass("selected");
+    rowElem.addClass("selected");
   }
 }
 
