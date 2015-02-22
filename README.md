@@ -1,1 +1,0 @@
-# Initial readme for Tree Hacks chrome extension project.
