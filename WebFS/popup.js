@@ -145,7 +145,7 @@ function parseFilesystemContents(fileSystemContents, path){
     }
   } else {
     console.log("malformed path in parseFilesystemContents: directory " + dirname + " does not exist");
-    return undefined; 
+    return undefined;
   }
 }
 
@@ -200,9 +200,10 @@ function renderCurrentDirectory(path){
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
                               + " srcName=\"" + key + "\">"
-                              + "<td>" + key + "</td>"
+                              + "<td><p>" + key + "</p></td>"
                               + "<td>" + curDirCont[key]["type"] + "</td></tr>");
           $("#contentsTable tr:last").after(tableElem);
+          tableElem.dblclick(fireFsItem);
           tableElem.click(listenFsItem);
           count++;
        }
@@ -355,8 +356,25 @@ function listenDirItem(event){
   }
 }
 
-// Will get called when a fs item is clicked
 function listenFsItem(event){
+  var elem = $(event.target);
+  console.log(elem.prop("tagName"));
+  if(elem.prop("tagName") === "TD"){
+    console.log("getting the parent");
+    elem = elem.parent("tr");
+  }
+  console.log(elem.attr("big"));
+  if(elem.hasClass("selected")){
+    console.log("setting to un-selected");
+    elem.removeClass("selected");
+  } else {
+    console.log("setting to selected");
+    elem.addClass("selected");
+  }
+}
+
+// Will get called when a fs item is clicked
+function fireFsItem(event){
   var elem = $(event.target);
   if(elem.prop("tagName") === "TD"){
     console.log("getting the parent");

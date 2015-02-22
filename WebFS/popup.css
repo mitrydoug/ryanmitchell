@@ -19,6 +19,11 @@ div {
 	margin-bottom: 10px;
 }
 
+p {
+	padding: 0px;
+	margin: 0px;
+}
+
 
 #contentsTable{
 	width: 100%;
@@ -46,13 +51,28 @@ div {
 	padding: 3px;
 }
 
+.oddfile.selected {
+	background-color: #44D482;
+}
+
+.oddfile.selected:hover {
+	background-color: #8C1D1D;
+}
+
 .oddfile:hover {
 	background-color: red;
 }
 
 .evenfile {
 	background-color: #7D8BBA;
-	padding: 3px;
+}
+
+.evenfile.selected{
+	background-color: #269945;
+}
+
+.evenfile.selected:hover {
+	background-color: #8C1D1D;
 }
 
 .evenfile:hover {
