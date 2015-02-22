@@ -181,18 +181,15 @@ function renderCurrentDirectory(path){
 			if(Object.keys(a)[0].toUpperCase() > Object.keys(b)[0].toUpperCase()) return 1;
 			return 0;
 	   });
-	   console.log("Sorted arrays: ");
-	   console.log(dirArray);
-	   console.log(fileArray);
        var count = 0;
        $("#contentsTable tr:not(#head_row)").remove();
        for(var i = 0; i < dirArray.length; i++){
 	      var key = Object.keys(dirArray[i]);
-		  console.log("KEY: " + key);
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
                               + " srcName=\"" + key + "\">"
-                              + "<td><p>" + key + "</p>" 
+                              + "<td><img class=\"iconImg\" src=\"folderIcon.png\"></img>"
+							  + "<p>" + key + "</p>" 
                               +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
                               + "</td>"
                               + "<td>" + dirArray[i][key]["type"] + "</td></tr>");
@@ -204,9 +201,10 @@ function renderCurrentDirectory(path){
 	   for(var i = 0; i < fileArray.length; i++){
 	      var key = Object.keys(fileArray[i]);
           var tableElem = $("<tr id=\"file" + count + "\"" 
-                              + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
+                              + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + " fileImg\""
                               + " srcName=\"" + key + "\">"
-                              + "<td><p>" + key + "</p>" 
+                              + "<td><img class=\"iconImg\" src=\"pageIcon.png\"></img>"
+							  + "<p>" + key + "</p>" 
                               +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
                               + "</td>"
                               + "<td>" + fileArray[i][key]["type"] + "</td></tr>");
