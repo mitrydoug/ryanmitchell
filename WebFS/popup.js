@@ -265,52 +265,16 @@ function saveURL(cdobj) {
       console.log(fileSystem);
       fileSystem = fileSystem[fskey];
       console.log(fileSystem);
-      /*try {
-        fileSystem = JSON.parse(fileSystem[fskey]);
-      }
-      catch(e) {
-        fileSystem = {};
-      }
-      if(isEmpty(fileSystem)) {  
-        console.log("Creating default dir");
-        fileSystem = {
-          "dir1": {
-            "type": "directory",
-            "contents" : {
-              "doop": {
-                "type": "directory",
-                "contents":{"wakaka": "bloop"}
-              }
-            }
-          }
-        };
-      }*/
-       if(fileSystem == undefined) {
-        console.log("Creating default dir");
-        fileSystem = {
-          "dir1": {
-            "type": "directory",
-            "contents" : {
-              "doop": {
-                "type": "directory",
-                "contents":{"wakaka": "bloop"}
-              }
-            }
-          }
-        };
-       }
-       else {
-        fileSystem = JSON.parse(fileSystem);
-       }
-       var curDirCont = parseFilesystemContents(fileSystem, path); 
-       console.log("Before adding URL");
-	   console.log(fileSystem);
-       var name = window.prompt("Please enter a name for this web page.", "");
-	   if(!name) return;
-       if(!validName(name)) {
-         window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
-       } else {
-         var newObj = {
+      fileSystem = JSON.parse(fileSystem);
+      var curDirCont = parseFilesystemContents(fileSystem, path); 
+      console.log("Before adding URL");
+	    console.log(fileSystem);
+      var name = window.prompt("Please enter a name for this web page.", "");
+	    if(!name) return;
+        if(!validName(name)) {
+          window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
+        } else {
+          var newObj = {
             "type" : "url",
             "url" : url
          };
@@ -418,14 +382,21 @@ function listenFsItem(event){
   console.log(rowElem.prop("tagName"));
   console.log(elem.prop("tagName"));
 
+  //need to clense things which are not
+
   if(elem.prop("tagName") === "P" && rowElem.hasClass("selected")){
     console.log("removing case");
     var name = elem.text();
     console.log("name: " + name);
     elem.remove();
-    var textIn = $("<form><input id=\"renamingInput\"type=\"input\" value=\"" + name + "\"></input></form>");
-    rowElem.children("td:first").append(textIn);
-    textIn.children("input:first").select();
+    var textInput = $("<input id=\"renamingInput\"type=\"input\" value=\"" + name + "\"></input>"); 
+    var textForm = $("<form></form>").append(textInput);
+    rowElem.children("td:first").append(textForm);
+    textInput.select();
+    textInput.blur(function(e){
+      textForm.remove();
+      rowElem.children("td:first").prepend("<p>" + name + "</p>");
+    });
     textIn.submit(function(event){
       console.log("In pseudo handler");
       renameItem(event, name);
@@ -437,6 +408,7 @@ function listenFsItem(event){
       rowElem.children("td:first").append("<img src=\"deleteButton.png\" class=\"rightFloat\"></img>");
     } else if(elem.attr("src") === "deleteButton.png"){
       deleteItem(rowElem.children("td:first").children("p:first").text());
+      return;
     }
   }
 
@@ -482,17 +454,6 @@ function fireFsItem(event){
       }
     });
   });
-  //if this is a diretory, move to dir. and update the current directory in storage
-  /*if(obj["type"] == "directory") {
-
-  }
-  //if url item, open page in new tab
-  else if(obj["type"] == "url") {
-    chrome.tabs.create({url : obj["url"]})  
-  }
-  else {
-    console.log("Error in listenFsItem: " + obj + " is neither a directory nor url.");
-  }*/
 }
 
 function moveUpDir() {
@@ -515,58 +476,3 @@ function moveUpDir() {
 		});
 	});
 }
-
-/**
- * @param {string} searchTerm - Search term for Google Image search.
- * @param {function(string,number,number)} callback - Called when an image has
- *   been found. The callback gets the URL, width and height of the image.
- * @param {function(string)} errorCallback - Called when the image is not found.
- *   The callback gets a string that describes the failure reason.
- */
-/*function getImageUrl(searchTerm, callback, errorCallback) {
-  // Google image search - 100 searches per day.
-  // https://developers.google.com/image-search/
-  var searchUrl = 'https://ajax.googleapis.com/ajax/services/search/images' +
-    '?v=1.0&q=' + encodeURIComponent(searchTerm);
-  var x = new XMLHttpRequest();
-  x.open('GET', searchUrl);
-  // The Google image search API responds with JSON, so let Chrome parse it.
-  x.responseType = 'json';
-  x.onload = function() {
-    // Parse and process the response from Google Image Search.
-    var response = x.response;
-    if (!response || !response.responseData || !response.responseData.results ||
-        response.responseData.results.length === 0) {
-      errorCallback('No response from Google Image search!');
-      return;
-    }
-    var firstResult = response.responseData.results[0];
-    // Take the thumbnail instead of the full image to get an approximately
-    // consistent image size.
-    var imageUrl = firstResult.tbUrl;
-    var width = parseInt(firstResult.tbWidth);
-    var height = parseInt(firstResult.tbHeight);
-    console.assert(
-        typeof imageUrl == 'string' && !isNaN(width) && !isNaN(height),
-        'Unexpected respose from the Google Image Search API!');
-    callback(imageUrl, width, height);
-  };
-  x.onerror = function() {
-    errorCallback('Network error.');
-  };
-  x.send();
-}*/
-
-//filesystem
-/*{
-  "dir1": {
-    "type": "directory",
-    "contents": {
-        /* recursive  
-    } 
-  }
-  "file1": {
-    "type": "url",
-    "url" : "google.com"
-  }
-}*/
