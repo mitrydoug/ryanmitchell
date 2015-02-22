@@ -181,11 +181,13 @@ function deleteSelected() {
 				//srcName is key
 				console.log(this);
 				if($(this).hasClass("selected")) keys.push($(this).attr("srcName"));
+				if($(this).attr("srcName") === "queue") $(this).removeClass("selected"); //un-selects queue since you can't delete it
 			});
 			for(var i = 0; i < keys.length; i++) {
 				if(curDirCont[keys[i]]["type"] !== "queue") {
 					delete curDirCont[keys[i]];
 				}
+
 			}
 			var newFS = {};
 			newFS[fskey] = JSON.stringify(fileSystem);
