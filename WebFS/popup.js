@@ -12,14 +12,17 @@ var cdkey = "currentDir";
  *   is found.
  **/
 function getCurrentTabUrl(callback) {
+	console.log("Getting cur tab URL");
   // Query filter to be passed to chrome.tabs.query - see
   // https://developer.chrome.com/extensions/tabs#method-query
   var queryInfo = {
     active: true,
-    currentWindow: true
+    //currentWindow: true*/
+	lastFocusedWindow: true
   };
 
   chrome.tabs.query(queryInfo, function(tabs) {
+	console.log("query");
     // chrome.tabs.query invokes the callback with a list of tabs that match the
     // query. When the popup is opened, there is certainly a window and at least
     // one tab, so we can safely assume that |tabs| is a non-empty array.
@@ -36,7 +39,7 @@ function getCurrentTabUrl(callback) {
     // from |queryInfo|), then the "tabs" permission is required to see their
     // "url" properties.
     console.assert(typeof url == 'string', 'tab.url should be a string');
-
+	console.log("getting url was sucessful");
     callback(url);
   });
 
@@ -140,17 +143,28 @@ function parseFilesystemContents(fileSystemContents, path){
 
 function renderCurrentDirectory(path){
 
-  //console.log(parseFilesystemContents(fs, pat));
   console.log("rendering: " + path);
 
   var pathTokens = path.split("/").slice(1, path.split("/").length - 1);
   console.log(pathTokens);
   $("#curDirRow td").remove();
-  var backArrows = $("<td id=\"backArrow\" class=\"evenmarker\"> << </td>");
+  var backButton = $("<td id=\"backButton\" class=\"evenmarker\"><img id=\"backImg\" class=\"backButton\" src=\"backButton.png\"></img></td>");
+  //var backButtonHover = $("<td id=\"backButtonHover\" class=\"evenmarker\"><img class = \"backButton\" src = \"backButtonHover.png\"></img></td>");
+  //backButton.css("display", "inline-block");
+  //backButtonHover.css("display", "none");
   var rootFolder = $("<td id=\"diritem1\" class=\"oddmarker\" dirName=\"/\">/</td>");
-  backArrows.click(listenDirItem);
+  backButton.hover(function() {
+	//backButton.css("display", "none");
+    //backButtonHover.css("display", "inline-block");
+	$("#backImg").attr("src", "backButtonHover.png");
+  }, function() {
+	//backButton.css("display", "inline-block");
+    //backButtonHover.css("display", "none");
+	$("#backImg").attr("src", "backButton.png");
+  });
+  backButton.click(listenDirItem);
   rootFolder.click(listenDirItem);
-  $("#curDirRow").append(backArrows);
+  $("#curDirRow").append(backButton);
   $("#curDirRow").append(rootFolder);
   var count = 2;
   for(index in pathTokens){
@@ -166,16 +180,52 @@ function renderCurrentDirectory(path){
        console.log("fetched fs data");
        console.log(fileSystem);
        var curDirCont = parseFilesystemContents(JSON.parse(fileSystem[fskey]), path);
+	   var dirArray = new Array();
+	   var fileArray = new Array();
+	   for(key in curDirCont) {
+	     var next = {};
+		 next[key] = curDirCont[key];
+		 if(curDirCont[key]["type"] === "directory") dirArray.push(next);
+		 else if(curDirCont[key]["type"] === "url") fileArray.push(next);
+		 else console.log("Error in renderCurrentDirectory, " + curDirCont[key] + " type is invalid");
+	   }
+	   dirArray.sort(function(a, b){
+			if(Object.keys(a)[0].toUpperCase() < Object.keys(b)[0].toUpperCase()) return -1; //keys[0] is the only key, which is the name
+			if(Object.keys(a)[0].toUpperCase() > Object.keys(b)[0].toUpperCase()) return 1;
+			return 0;
+	   });
+	   fileArray.sort(function(a, b){
+			if(Object.keys(a)[0].toUpperCase() < Object.keys(b)[0].toUpperCase()) return -1;
+			if(Object.keys(a)[0].toUpperCase() > Object.keys(b)[0].toUpperCase()) return 1;
+			return 0;
+	   });
        var count = 0;
        $("#contentsTable tr:not(#head_row)").remove();
-       for(key in curDirCont){
+       for(var i = 0; i < dirArray.length; i++){
+	      var key = Object.keys(dirArray[i]);
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
                               + " srcName=\"" + key + "\">"
-                              + "<td><p>" + key + "</p>" 
+                              + "<td><img class=\"iconImg\" src=\"folderIcon.png\"></img>"
+							  + "<p>" + key + "</p>" 
                               +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
                               + "</td>"
-                              + "<td>" + curDirCont[key]["type"] + "</td></tr>");
+                              + "<td>" + dirArray[i][key]["type"] + "</td></tr>");
+          $("#contentsTable tr:last").after(tableElem);
+          tableElem.dblclick(fireFsItem);
+          tableElem.click(listenFsItem);
+          count++;
+       }
+	   for(var i = 0; i < fileArray.length; i++){
+	      var key = Object.keys(fileArray[i]);
+          var tableElem = $("<tr id=\"file" + count + "\"" 
+                              + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + " fileImg\""
+                              + " srcName=\"" + key + "\">"
+                              + "<td><img class=\"iconImg\" src=\"pageIcon.png\"></img>"
+							  + "<p>" + key + "</p>" 
+                              +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
+                              + "</td>"
+                              + "<td>" + fileArray[i][key]["type"] + "</td></tr>");
           $("#contentsTable tr:last").after(tableElem);
           tableElem.dblclick(fireFsItem);
           tableElem.click(listenFsItem);
@@ -193,6 +243,7 @@ function createFolder(path, name) {
     console.log("2 in callback for sync get");
       fileSystem = JSON.parse(fileSystem[fskey]);
        var curDirCont = parseFilesystemContents(fileSystem, path); 
+	   console.log(curDirCont);
        if(!validName(name)) {
          window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
        } else {
@@ -201,6 +252,7 @@ function createFolder(path, name) {
             "contents" : {}
          };
          if(curDirCont[name]) {
+		     console.log("cur dir is " + JSON.stringify(curDirCont));
             //prompt to delete existing file
             var del = window.confirm("An item with that name already exists. Should we replace it? (***Careful! This will delete all contents if it is a folder***)");
             if(del == false) {
@@ -233,8 +285,9 @@ function isEmpty(object) {
 function saveURL(path, name) {
   console.log("yesyesyes");
   getCurrentTabUrl(function(url) {
+	console.log("Not getting here");
     chrome.storage.sync.get(fskey, function(fileSystem) {
-      console.log(fileSystem);
+      console.log("in the get of getURL");
       fileSystem = fileSystem[fskey];
       console.log(fileSystem);
       fileSystem = JSON.parse(fileSystem);
@@ -256,11 +309,13 @@ function saveURL(path, name) {
               return;
             }
          }
+		 console.log("about to create new obj");
          curDirCont[name] = newObj;
          var obj = {};
          obj[fskey] = JSON.stringify(fileSystem)
          chrome.storage.sync.set(obj, function() {
-          renderCurrentDirectory(path);
+			console.log("add successful");
+            renderCurrentDirectory(path);
          });
          curDirCont = parseFilesystemContents(fileSystem, path); 
          console.log("After adding URL");
