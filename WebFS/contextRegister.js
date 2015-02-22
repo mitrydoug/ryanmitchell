@@ -1,5 +1,10 @@
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 var fskey = "jsonFile";
 var cdkey = "currentDir";
+
 
 function parseFilesystemContents(fileSystemContents, path){
   console.log(path);
@@ -15,7 +20,7 @@ function parseFilesystemContents(fileSystemContents, path){
 
   if(fileSystemContents[dirname]){
     var newCont = fileSystemContents[dirname];
-    if(newCont["type"] === 'directory'){
+    if(newCont["type"] === 'directory' || newCont["type"] === 'queue'){
       console.log("found directory: " + dirname + " and recursing on : " + path.substr(1 + dirname.length));
       return parseFilesystemContents(newCont["contents"], path.substr(1 + dirname.length));
     } else {
@@ -28,7 +33,27 @@ function parseFilesystemContents(fileSystemContents, path){
   }
 }
 
-function saveURL(path, name, url) {
+//this function returns whether or not the passed in file name is valid or not
+function validName(name) {
+  if(name.indexOf("/") > -1) return false;
+  if(name.length > 32) return false;
+  return true;
+}
+
+function isEmpty(object) {
+  return Object.keys(object).length === 0;
+}
+
+function httpGet(theUrl) {
+    var xmlHttp = null;
+
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false );
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
+
+function queueItem(path, name, url) {
   console.log("yesyesyes");
   chrome.storage.sync.get(fskey, function(fileSystem) {
 	  console.log(fileSystem);
@@ -56,9 +81,7 @@ function saveURL(path, name, url) {
 	     curDirCont[name] = newObj;
 	     var obj = {};
 	     obj[fskey] = JSON.stringify(fileSystem)
-	     chrome.storage.sync.set(obj, function() {
-	      renderCurrentDirectory(path);
-	     });
+	     chrome.storage.sync.set(obj);
 	     curDirCont = parseFilesystemContents(fileSystem, path); 
 	     console.log("After adding URL");
 	     console.log(fileSystem);
@@ -66,15 +89,22 @@ function saveURL(path, name, url) {
 	});
 }
 
-var count = 0;
-
 function addToQueue(info, tab){
-	console.log("new here");
+	console.log("info: " + JSON.stringify(info));
 	chrome.storage.sync.get(cdkey, function(cdobj){
 		chrome.storage.sync.get(fskey, function(fsobj){
 			var filesystem = JSON.parse(fsobj[fskey]);
-			var curDirCont = parseFilesystem(fileSystem, cdobj[cdkey]);
-			saveUrl("/queue/", "link" + count, info["linkUrl"]);
+			var curDirCont = parseFilesystemContents(filesystem, cdobj[cdkey]);
+			var pageHtml = httpGet(info["pageUrl"]);
+			var i = pageHtml.indexOf(info["linkUrl"].substr(info["linkUrl"].lastIndexOf("/") + 1));
+			var name = pageHtml.substr(
+				pageHtml.substr(i).indexOf(">") + i + 1,
+				pageHtml.substr(i).indexOf("<") -
+					pageHtml.substr(i).indexOf(">") - 1);
+			console.log(pageHtml);
+			console.log("index: " + i);
+			console.log("name: " + name);
+			queueItem("/queue/", name, info["linkUrl"]);
 		});
 	});
 }

@@ -128,7 +128,7 @@ function parseFilesystemContents(fileSystemContents, path){
 
   if(fileSystemContents[dirname]){
     var newCont = fileSystemContents[dirname];
-    if(newCont["type"] === 'directory'){
+    if(newCont["type"] === 'directory' || newCont["type"] === 'queue'){
       console.log("found directory: " + dirname + " and recursing on : " + path.substr(1 + dirname.length));
       return parseFilesystemContents(newCont["contents"], path.substr(1 + dirname.length));
     } else {
@@ -367,7 +367,7 @@ function deleteItem(name) {
 }
 
 function listenDirItem(event){
-  if(event.target.id === "backArrow") {
+  if(event.target.id === "backButton") {
     moveUpDir();
   }
   else {
