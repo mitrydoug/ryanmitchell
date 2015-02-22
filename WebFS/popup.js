@@ -214,6 +214,7 @@ function queueCurrentPage() {
 			var tab = tabs[0];
 			var url = tab.url;
 			var title = tab.title;
+			title = trimName(title);
 			console.assert(typeof url == 'string', 'tab.url should be a string');
 			var obj = {
 				"type": "url",
@@ -231,6 +232,11 @@ function queueCurrentPage() {
 			});
 		});
 	});
+}
+
+function trimName(name) {
+	if(name.length > 20) name = name.substr(0, 20) + "...";
+	return name;
 }
 
 function deleteSelected() {
@@ -335,9 +341,8 @@ function renderCurrentDirectory(path){
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
                               + " srcName=\"" + key + "\">"
-                              + "<td><img class=\"iconImg\" src=\"folderIcon.png\"></img>"
-							  + "<p>" + key + "</p>" 
-                              +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
+                              + "<td><img class=\"iconImg\" src=\"queueIcon.png\"></img>"
+							  + "<p>" + "ueue" + "</p>" 
                               + "</td>"
                               + "<td>" + curDirCont[key]["type"] + "</td></tr>");
           $("#contentsTable tr:last").after(tableElem);
@@ -627,10 +632,12 @@ function fireFsItem(event){
       //if url item, open page in new tab
       else if(curDirCont[name]["type"] === "url") {
         chrome.tabs.create({url : curDirCont[name]["url"]});
-		if(path === "/queue/") delete curDirCont[name];
-		var newFS = {};
-		newFS[fskey] = JSON.stringify(fileSystem);
-		chrome.storage.sync.set(newFS);
+		if(cdobj[cdkey] === "/queue/") {
+			delete curDirCont[name];
+			var newFS = {};
+			newFS[fskey] = JSON.stringify(fileSystem);
+			chrome.storage.sync.set(newFS);
+		}
       }
       else {
         console.log("Error in listenFsItem: " + curDirCont[name] + " is neither a directory nor url.");
