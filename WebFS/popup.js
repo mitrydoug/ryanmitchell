@@ -200,7 +200,9 @@ function renderCurrentDirectory(path){
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
                               + " srcName=\"" + key + "\">"
-                              + "<td><p>" + key + "</p></td>"
+                              + "<td><p>" + key + "</p>" 
+                              +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
+                              + "</td>"
                               + "<td>" + curDirCont[key]["type"] + "</td></tr>");
           $("#contentsTable tr:last").after(tableElem);
           tableElem.dblclick(fireFsItem);
@@ -362,18 +364,18 @@ function renameItem(event, oldName) {
 	});	
 }
 
-function deleteItem(event) {
+function deleteItem(name) {
 	chrome.storage.sync.get(cdkey, function(cdobj) {
 		chrome.storage.sync.get(fskey, function(fsobj) {
-			var curDirCont = parseFilesystemContents(JSON.parse(fsobj[fskey]), cdobj[cdkey]);
-			var name = event.target.id.text //something like this
+      var fileSystem = JSON.parse(fsobj[fskey]);
+			var curDirCont = parseFilesystemContents(fileSystem, cdobj[cdkey]);
 			if(!curDirCont[name]) {
 				console.log("Error in renameItem: " + name + "does not exist in current directory");
 				return;
 			}
-			delete curDirCont[oldName];
+			delete curDirCont[name];
 			var newFS = {};
-			newFS[fskey] = JSON.stringify(fsobj[fskey]);
+			newFS[fskey] = JSON.stringify(fileSystem);
 			chrome.storage.sync.set(newFS, function() {
 				renderCurrentDirectory(cdobj[cdkey]);
 			});
@@ -429,6 +431,13 @@ function listenFsItem(event){
       renameItem(event, name);
     });
     return;
+  } else if(elem.prop("tagName") == "IMG"){
+    if(elem.attr("src") === "deleteIcon.png"){
+      elem.remove();
+      rowElem.children("td:first").append("<img src=\"deleteButton.png\" class=\"rightFloat\"></img>");
+    } else if(elem.attr("src") === "deleteButton.png"){
+      deleteItem(rowElem.children("td:first").children("p:first").text());
+    }
   }
 
   //toggle the selected class

@@ -103,3 +103,7 @@ p {
 .evenmarker:hover {
 	background-color: red;
 }
+
+.rightFloat {
+	float: right;
+}
