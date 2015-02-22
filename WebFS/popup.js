@@ -111,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
       fs[fskey] = JSON.stringify({
         "queue": {
           "type": "queue",
+		  "spec_type": "queue",
           "contents": {}
         }
       });
@@ -213,12 +214,16 @@ function queueCurrentPage() {
 		chrome.tabs.query(queryInfo, function(tabs) {
 			var tab = tabs[0];
 			var url = tab.url;
+			var favIconUrl = tab.favIconUrl;
 			var title = tab.title;
 			title = trimName(title);
 			console.assert(typeof url == 'string', 'tab.url should be a string');
+			var specType = getSrcType(url);
 			var obj = {
 				"type": "url",
 				"url": url,
+				"icon": favIconUrl,
+				"spec_type": specType,
 				"time_stamp": String((new Date()).getTime() / 1000)
 			};
 			queueCont[title] = obj;
@@ -277,16 +282,11 @@ function deleteSelected() {
 function renderCurrentDirectory(path){
 
   console.log("rendering: " + path);
-  if(path === "/queue/") {
-	$("#head_row").find("td:last").text("Timestamp");
-  } else {
-	$("#head_row").find("td:last").text("Type");
-  }
   var pathTokens = path.split("/").slice(1, path.split("/").length - 1);
   console.log(pathTokens);
   $("#curDirRow td").remove();
   var backButton = $("<td id=\"backButton\" class=\"evenmarker\"><img id=\"backImg\" class=\"backButton\" src=\"backButton.png\"></img></td>");
-  var rootFolder = $("<td id=\"diritem1\" class=\"oddmarker\" dirName=\"/\">/</td>");
+  var rootFolder = $("<td id=\"diritem1\" class=\"oddmarker curDirToken\" dirName=\"/\">/</td>");
   backButton.hover(function() {
 	$("#backImg").attr("src", "backButtonHover.png");
   }, function() {
@@ -350,7 +350,8 @@ function renderCurrentDirectory(path){
                               + "<td><img class=\"iconImg\" src=\"queueIcon.png\"></img>"
 							  + "<p>" + "ueue" + "</p>" 
                               + "</td>"
-                              + "<td>" + curDirCont[key]["type"] + "</td></tr>");
+                              + "<td style=\"text-align:center;\">" + curDirCont[key]["type"] + "</td>"
+							  + "<td style=\"text-align:center;\">&#8734;</td></tr>");
           $("#contentsTable tr:last").after(tableElem);
           tableElem.dblclick(fireFsItem);
           tableElem.click(listenFsItem);
@@ -365,7 +366,9 @@ function renderCurrentDirectory(path){
 							  + "<p>" + key + "</p>" 
                               +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
                               + "</td>"
-                              + "<td>" + dirArray[i][key]["type"] + "</td></tr>");
+                              + "<td style=\"text-align: center;\">" + (dirArray[i][key]["spec_type"] ? dirArray[i][key]["spec_type"] : dirArray[i][key]["type"]) + "</td>"
+							  + "<td style=\"text-align: center;\">" + (new Date(dirArray[i][key]["time_stamp"] * 1000)).toLocaleString() + "</td>"
+							  + "</tr>");
           $("#contentsTable tr:last").after(tableElem);
           tableElem.dblclick(fireFsItem);
           tableElem.click(listenFsItem);
@@ -373,19 +376,16 @@ function renderCurrentDirectory(path){
        }
 	   for(var i = 0; i < fileArray.length; i++){
 	      var key = Object.keys(fileArray[i]);
-		  var endOfString = "<td>" + fileArray[i][key]["type"] + "</td></tr>";
-		  if(path === "/queue/") {
-			var date = new Date(fileArray[i][key]["time_stamp"] * 1000);
-			endOfString = "<td>" + date.toLocaleString() + "</td></tr>";
-		  }
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + " fileImg\""
                               + " srcName=\"" + key + "\">"
-                              + "<td><img class=\"iconImg\" src=\"pageIcon.png\"></img>"
+                              + "<td><img class=\"iconImg\" src=\"" + (fileArray[i][key]["icon"] ? fileArray[i][key]["icon"] : "pageIcon.png") + "\"></img>"
 							  + "<p>" + key + "</p>" 
                               +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
                               + "</td>"
-                              + endOfString);
+							  + "<td style=\"text-align: center;\">" + (fileArray[i][key]["spec_type"] ? fileArray[i][key]["spec_type"] : fileArray[i][key]["type"]) + "</td>"
+							  + "<td style=\"text-align: center;\">" + (new Date(fileArray[i][key]["time_stamp"] * 1000)).toLocaleString()
+						      + "</td></tr>");
           $("#contentsTable tr:last").after(tableElem);
           tableElem.dblclick(fireFsItem);
           tableElem.click(listenFsItem);
@@ -409,6 +409,8 @@ function createFolder(path, name) {
        } else {
          var newObj = {
             "type" : "directory",
+			"spec_type" : "directory",
+			"time_stamp": String((new Date()).getTime() / 1000),
             "contents" : {}
          };
          if(curDirCont[name]) {
@@ -441,10 +443,19 @@ function isEmpty(object) {
   return Object.keys(object).length === 0;
 }
 
+function getSrcType(url){
+	var x = new XMLHttpRequest();
+	x.open('GET', url, false);
+	console.log("before send");
+	x.send(null);
+	return x.getResponseHeader("content-type");
+}
+
 //this will get called when the save button is clicked and it will save the current URL into the current directory
 function saveURL(path, name) {
   console.log("yesyesyes");
   getCurrentTabUrl(function(url) {
+  
 	console.log("Not getting here");
     chrome.storage.sync.get(fskey, function(fileSystem) {
       console.log("in the get of getURL");
@@ -453,14 +464,25 @@ function saveURL(path, name) {
       fileSystem = JSON.parse(fileSystem);
       var curDirCont = parseFilesystemContents(fileSystem, path); 
       console.log("Before adding URL");
+	  var queryInfo = {
+		active: true,
+		currentWindow: true
+	  };
+	  chrome.tabs.query(queryInfo, function(tabs) {
+		var tab = tabs[0];
+		var favIconUrl = tab.favIconUrl;
 	    console.log(fileSystem);
+		var specType = getSrcType(url);
 	    if(!name) return;
         if(!validName(name)) {
           window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
         } else {
         var newObj = {
             "type" : "url",
-            "url" : url
+			"spec_type": specType,
+			"icon": favIconUrl,
+            "url" : url,
+			"time_stamp": String((new Date()).getTime() / 1000)
          };
 		 if(path === "/queue/") newObj["time_stamp"] = String((new Date()).getTime() / 1000);
          if(curDirCont[name]) {
@@ -482,6 +504,7 @@ function saveURL(path, name) {
          console.log("After adding URL");
          console.log(fileSystem);
        }
+	   });
     });
   });
 }
@@ -596,6 +619,7 @@ function listenFsItem(event){
   } else if(elem.prop("tagName") == "IMG"){
     if(elem.attr("src") === "deleteIcon.png"){
       elem.remove();
+	  $("#contentsTable").find("[src='deleteButton.png']").attr("src", "deleteIcon.png");
       rowElem.children("td:first").append("<img src=\"deleteButton.png\" class=\"rightFloat\"></img>");
       return;
     } else if(elem.attr("src") === "deleteButton.png"){

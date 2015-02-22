@@ -1,14 +1,13 @@
-body: {
-	border: solid black 1px;
+body {
 	padding: 0px;
 	margin: 0px;
-	color: #999999;
-	min-width: 200px;
-	height: 400px;
+	padding: 5px;
+	background-color: #300000;
+	width: 750px;
+	height: 800px;
 }
 
 #contentsTable > td {
-	border: solid black 1px;
 	/*background-color: #999999;*/
 }
 
@@ -23,24 +22,37 @@ p {
 	display: inline-block;
 }
 
-td {
-	border-right: solid black 3px;
+#contentsTable td {
 	font-family: "Verdana", serif, normal;
-	font-size: 20px;
+	vertical-align: middle;
+	font-size: 16px;
 }
 
 #head_row {
-	background-color: green;
+	background-color: #700007;
+	border-bottom: solid #300000 5px;
+	font-size: 22px;
+	font-weight: bold;
+	text-align: center;
+	margin-bottom: 5px;
+	color: #DE9999;
 }
 
-#saveFormInput {
-	/*display: inline-block;
-	width: 100%;*/
+#saveInput {
+	background-color: #DE9999;
+	outline: 0;
+	border: 0;
+}
+
+#createInput {
+	background-color: #DE9999;
+	outline: 0;
+	border: 0;
 }
 
 #contentsTable{
+	background-color: #300000;
 	width: 100%;
-	border: solid black 1px;
 	cursor: default;
 }
 
@@ -48,22 +60,27 @@ td {
 	background-color: #300000;
 	min-width: 400px;
 	cursor: default;
+	horizontal-align: 
 }
 
 #curDirLabel {
+	border-top: double #DE9999 2px;
+	border-bottom: double #DE9999 2px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	background-color: #300000;
 	padding: 0px;
-	border: solid black 1px;
-	background-color: black;
 	cursor: default;
 }
 
 #fsDisplay{
-	border: inset 1px;
+	background-color: #300000;
 	padding: 0px;
 }
 
 #backButton {
-	background-color: black;
+	margin: 0px;
+	background-color: #300000;
 }
 
 .backButton {
@@ -78,13 +95,14 @@ td {
 
 .curDirToken {
 	font-family: "Verdana", serif, normal;
-	font-size: 20px;
+	font-size: 14px;
 	cursor: default;
+	padding: 0px;
 }
 
 .oddfile {
-	background-color: #A9B3D1;
-	padding: 3px;
+	background-color: #DE9999;
+	color: #300000;
 	cursor: default;
 }
 
@@ -97,11 +115,12 @@ td {
 }
 
 .oddfile:hover {
-	background-color: red;
+	background-color: #E3B6B6;
 }
 
 .evenfile {
-	background-color: #7D8BBA;
+	background-color: #700007;
+	color: #DE9999;
 	cursor: default;
 }
 
@@ -114,33 +133,36 @@ td {
 }
 
 .evenfile:hover {
-	background-color: red;
+	background-color: #8C4248;
+	color: #F2C7C7;
 }
 
 .oddmarker{
-	padding-top: 3px;
-	padding-bottom: 3px;
+	padding-top: 1px;
+	padding-bottom: 1px;
 	padding-left: 5px;
 	padding-right: 5px;
-	background-color: #A9B3D1;
+	background-color: #DE9999;
+	color: #300000;
 	cursor: default;
 }
 
 .oddmarker:hover {
-	background-color: red;
+	background-color: #E3B6B6;
 }
 
 .evenmarker{
-	padding-top: 3px;
-	padding-bottom: 3px;
+	padding-top: 1px;
+	padding-bottom: 1px;
 	padding-left: 5px;
 	padding-right: 5px;
-	background-color: #7D8BBA;
+	background-color: #700007;
+	color: #DE9999;
 	cursor: default;
 }
 
 .evenmarker:hover {
-	background-color: red;
+	background-color: #8C4248;
 }
 
 .rightFloat {
@@ -157,7 +179,7 @@ td {
 	cursor: default;
 	font-family: "Verdana", serif, normal;
 	font-size: 16px;
-	color: #FF5757;
+	color: #DE9999;
 }
 
 .newLineToken {
@@ -170,7 +192,7 @@ td {
 	cursor: default;
 	font-family: "Verdana", serif, normal;
 	font-size: 16px;
-	color: #FF5757;
+	color: #DE9999;
 }
 
 .newLineToken:hover{
@@ -182,13 +204,15 @@ td {
 }
 
 #saveFalldown {
-	background-color: ;
+	background-color: #300000;
+	padding: 5px;
 	cursor: default;
-	color: #FF5757;
+	color: #DE9999;
 }
 
-#createFAlldown{
+#createFalldown{
 	background-color: #300000;
+	padding: 5px;
 	cursor: default;
-	color: #FF5757;
+	color: #DE9999;
 }

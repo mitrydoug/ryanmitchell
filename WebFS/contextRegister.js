@@ -36,8 +36,14 @@ function parseFilesystemContents(fileSystemContents, path){
 //this function returns whether or not the passed in file name is valid or not
 function validName(name) {
   if(name.indexOf("/") > -1) return false;
-  if(name.length > 32) return false;
   return true;
+}
+
+function trimName(name) {
+	if(name.length > 20){
+		name = name.substr(0, 20) + "...";
+	}
+	return name;
 }
 
 function isEmpty(object) {
@@ -53,6 +59,14 @@ function httpGet(theUrl) {
     return xmlHttp.responseText;
 }
 
+function getSrcType(url){
+	var x = new XMLHttpRequest();
+	x.open('GET', url, false);
+	console.log("before send");
+	x.send(null);
+	return x.getResponseHeader("content-type");
+}
+
 function queueItem(name, url) {
   console.log("yesyesyes");
   chrome.storage.sync.get(fskey, function(fileSystem) {
@@ -60,30 +74,40 @@ function queueItem(name, url) {
 	  fileSystem = fileSystem[fskey];
 	  console.log(fileSystem);
 	  fileSystem = JSON.parse(fileSystem);
-	  var curDirCont = parseFilesystemContents(fileSystem, "/queue/"); 
-	  console.log("Before adding URL");
-	    console.log(fileSystem);
-	    if(!name) return;
-	    if(!validName(name)) {
-	      window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
-	    } else {
-	      var newObj = {
-	        "type" : "url",
-	        "url" : url,
-	        "time_stamp": String((new Date()).getTime() / 1000)
-	     };
-	     if(curDirCont[name]) {
-	        //prompt to delete existing file
-	        var del = window.confirm("An item with that name already exists. Should we replace it? (***Careful! This will delete all contents if it is a folder***)");
-	        if(del == false) {
-	          return;
-	        }
-	     }
-	     curDirCont[name] = newObj;
-	     var obj = {};
-	     obj[fskey] = JSON.stringify(fileSystem)
-	     chrome.storage.sync.set(obj);
-	   }
+	  var curDirCont = parseFilesystemContents(fileSystem, "/queue/");
+	  var queryInfo = {
+		active: true,
+		currentWindow: true
+	  };
+	  chrome.tabs.query(queryInfo, function(tabs) {
+		var tab = tabs[0];
+		var favIconUrl = tab.favIconUrl;
+		console.log("Before adding URL");
+		console.log(fileSystem);
+		if(!name) return;
+		if(!validName(name)) {
+			window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
+		} else {
+			var newObj = {
+				"type" : "url",
+				"spec_type": getSrcType(url),
+				"icon": favIconUrl,
+				"url" : url,
+				"time_stamp": String((new Date()).getTime() / 1000)
+			};
+			if(curDirCont[name]) {
+				//prompt to delete existing file
+				var del = window.confirm("An item with that name already exists. Should we replace it? (***Careful! This will delete all contents if it is a folder***)");
+				if(del == false) {
+				  return;
+				}
+			 }
+			 curDirCont[name] = newObj;
+			 var obj = {};
+			 obj[fskey] = JSON.stringify(fileSystem)
+			 chrome.storage.sync.set(obj);
+		}
+	  });
 	});
 }
 
@@ -94,7 +118,9 @@ function addToQueue(info, tab){
 			var filesystem = JSON.parse(fsobj[fskey]);
 			var curDirCont = parseFilesystemContents(filesystem, cdobj[cdkey]);
 			var pageHtml = httpGet(info["pageUrl"]);
-			var i = pageHtml.indexOf(info["linkUrl"].substr(info["linkUrl"].lastIndexOf("/") + 1));
+			var i = 0;
+			while(pageHtml.indexOf(info["linkUrl"].substr(i)) == -1) i ++;
+			i = pageHtml.indexOf(info["linkUrl"].substr(i));
 			var name = pageHtml.substr(
 				pageHtml.substr(i).indexOf(">") + i + 1,
 				pageHtml.substr(i).indexOf("<") -
@@ -103,9 +129,8 @@ function addToQueue(info, tab){
 			console.log("looking for: " + info["linkUrl"].substr(info["linkUrl"].lastIndexOf("/") + 1));
 			console.log("index: " + i);
 			console.log("name: " + name);
-			if(info["linkUrl"].substr(info["linkUrl"].lastIndexOf("/") + 1).length < name.length){
-				name = info["linkUrl"].substr(info["linkUrl"].lastIndexOf("/") + 1);
-			}
+			name = trimName(name);
+			console.log(name);
 			queueItem(name, info["linkUrl"]);
 		});
 	});
