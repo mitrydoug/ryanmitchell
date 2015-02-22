@@ -606,10 +606,12 @@ function fireFsItem(event){
       //if url item, open page in new tab
       else if(curDirCont[name]["type"] === "url") {
         chrome.tabs.create({url : curDirCont[name]["url"]});
-		if(path === "/queue/") delete curDirCont[name];
-		var newFS = {};
-		newFS[fskey] = JSON.stringify(fileSystem);
-		chrome.storage.sync.set(newFS);
+		if(cdobj[cdkey] === "/queue/") {
+			delete curDirCont[name];
+			var newFS = {};
+			newFS[fskey] = JSON.stringify(fileSystem);
+			chrome.storage.sync.set(newFS);
+		}
       }
       else {
         console.log("Error in listenFsItem: " + curDirCont[name] + " is neither a directory nor url.");
