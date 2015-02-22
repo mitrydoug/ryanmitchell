@@ -4,6 +4,7 @@
 
 var fskey = "jsonFile";
 var cdkey = "currentDir";
+var lastClickTime = 2147000000;
 
 /**
  * Get the current URL.
@@ -76,6 +77,9 @@ document.addEventListener('DOMContentLoaded', function() {
     /*chrome.storage.sync.get(cdkey, createFolder);*/
   });
 
+  $('#openSelected').click(openSelected);
+  $('#deleteSelected').click(deleteSelected);
+	
   $("#saveInput").keypress(function(e){
     if(e.which === 13){
       saveFormHandler($("#saveInput").val());
@@ -141,6 +145,59 @@ function parseFilesystemContents(fileSystemContents, path){
   }
 }
 
+function openSelected() {
+	chrome.storage.sync.get(cdkey, function(cdobj) {
+		chrome.storage.sync.get(fskey, function(fsobj) {
+			var fileSystem = JSON.parse(fsobj[fskey]);
+			var path = cdobj[cdkey];
+			var curDirCont = parseFilesystemContents(fileSystem, path);
+			var keys = new Array();
+			$("#contentsTable").find("tr").each(function() {
+				//srcName is key
+				console.log(this);
+				if($(this).hasClass("selected")) keys.push($(this).attr("srcName"));
+			});
+			for(var i = 0; i < keys.length; i++) {
+				if(curDirCont[keys[i]]["type"] === "url") {
+					chrome.tabs.create({url : curDirCont[keys[i]]["url"]});
+				}
+			}
+		});
+	});
+}
+
+function deleteSelected() {
+	var del = window.confirm("Are you sure you want to delete the selected items? (***Careful! This will delete all contents if any are a folder***)");
+	if(del == false) {
+	  return;
+	}
+	chrome.storage.sync.get(cdkey, function(cdobj) {
+		chrome.storage.sync.get(fskey, function(fsobj) {
+			var fileSystem = JSON.parse(fsobj[fskey]);
+			var path = cdobj[cdkey];
+			var curDirCont = parseFilesystemContents(fileSystem, path);			
+			var keys = new Array();
+			$("#contentsTable").find("tr").each(function() {
+				//srcName is key
+				console.log(this);
+				if($(this).hasClass("selected")) keys.push($(this).attr("srcName"));
+				if($(this).attr("srcName") === "queue") $(this).removeClass("selected"); //un-selects queue since you can't delete it
+			});
+			for(var i = 0; i < keys.length; i++) {
+				if(curDirCont[keys[i]]["type"] !== "queue") {
+					delete curDirCont[keys[i]];
+				}
+
+			}
+			var newFS = {};
+			newFS[fskey] = JSON.stringify(fileSystem);
+			chrome.storage.sync.set(newFS, function() {
+				renderCurrentDirectory(path);
+			});
+		});
+	});
+}
+
 function renderCurrentDirectory(path){
 
   console.log("rendering: " + path);
@@ -178,9 +235,9 @@ function renderCurrentDirectory(path){
 	   for(key in curDirCont) {
 	     var next = {};
 		 next[key] = curDirCont[key];
-		 if(curDirCont[key]["type"] === "directory" || curDirCont[key]["type"] === "queue") dirArray.push(next);
+		 if(curDirCont[key]["type"] === "directory") dirArray.push(next);
 		 else if(curDirCont[key]["type"] === "url") fileArray.push(next);
-		 else console.log("Error in renderCurrentDirectory, " + curDirCont[key] + " type is invalid");
+		 else if(curDirCont[key]["type"] !== "queue") console.log("Error in renderCurrentDirectory, " + curDirCont[key] + " type is invalid");
 	   }
 	   dirArray.sort(function(a, b){
 			if(Object.keys(a)[0].toUpperCase() < Object.keys(b)[0].toUpperCase()) return -1; //keys[0] is the only key, which is the name
@@ -194,6 +251,22 @@ function renderCurrentDirectory(path){
 	   });
        var count = 0;
        $("#contentsTable tr:not(#head_row)").remove();
+	//display the queue first
+	   if(path === "/") {
+		  var key = "queue";
+          var tableElem = $("<tr id=\"file" + count + "\"" 
+                              + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
+                              + " srcName=\"" + key + "\">"
+                              + "<td><img class=\"iconImg\" src=\"folderIcon.png\"></img>"
+							  + "<p>" + key + "</p>" 
+                              +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
+                              + "</td>"
+                              + "<td>" + curDirCont[key]["type"] + "</td></tr>");
+          $("#contentsTable tr:last").after(tableElem);
+          tableElem.dblclick(fireFsItem);
+          tableElem.click(listenFsItem);
+          count++;
+	   }
        for(var i = 0; i < dirArray.length; i++){
 	      var key = Object.keys(dirArray[i]);
           var tableElem = $("<tr id=\"file" + count + "\"" 
@@ -367,7 +440,8 @@ function deleteItem(name) {
 }
 
 function listenDirItem(event){
-  if(event.target.id === "backButton") {
+
+  if(event.target.className === "backButton" || event.target.id === "backButton") {
     moveUpDir();
   }
   else {
@@ -402,8 +476,11 @@ function listenFsItem(event){
   console.log(elem.prop("tagName"));
 
   //need to clense things which are not
-
-  if(elem.prop("tagName") === "P" && rowElem.hasClass("selected")){
+  var d = new Date();
+  var n = d.getTime();
+  var timeSinceLastClick = n - lastClickTime;
+  console.log(timeSinceLastClick);
+  if(elem.prop("tagName") === "P" && rowElem.hasClass("selected") && timeSinceLastClick > 500){
     console.log("removing case");
     var name = elem.text();
     console.log("name: " + name);
@@ -442,14 +519,15 @@ function listenFsItem(event){
     console.log("setting to selected");
     rowElem.addClass("selected");
   }
+  lastClickTime = n;
 }
 
 // Will get called when a fs item is clicked
 function fireFsItem(event){
   var elem = $(event.target);
-  if(elem.prop("tagName") === "TD"){
+  if(elem.prop("tagName") !== "TR"){
     console.log("getting the parent");
-    elem = elem.parent("tr");
+    elem = elem.closest("tr");
   }
   //console.log(elem.attr("srcName"));
   var name = elem.attr("srcName");
@@ -501,7 +579,7 @@ function moveUpDir() {
 
 function saveFormHandler(name) {
   $("#saveFalldown").css("display", "none");
-  $("#saveInput").attr("value", "");
+  $("#saveInput").val("");
   chrome.storage.sync.get(cdkey, function(cdobj){
     console.log("here");
     saveURL(cdobj[cdkey], name);
@@ -510,7 +588,7 @@ function saveFormHandler(name) {
 
 function createFormHandler(name) {
   $("#createFalldown").css("display", "none");
-  $("#createInput").attr("value", "");
+  $("#createInput").val("");
   chrome.storage.sync.get(cdkey, function(cdobj){
     console.log("new here: " + name);
     createFolder(cdobj[cdkey], name);
