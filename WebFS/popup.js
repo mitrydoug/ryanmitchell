@@ -165,35 +165,51 @@ function renderCurrentDirectory(path){
 	   var dirArray = new Array();
 	   var fileArray = new Array();
 	   for(key in curDirCont) {
-		 if(curDirCont[key]["type"] === "directory") dirArray.push({key : curDirCont[key]});
-		 else if(curDirCont[key]["type"] === "url") fileArray.push({key : curDirCont[key]});
+	     var next = {};
+		 next[key] = curDirCont[key];
+		 if(curDirCont[key]["type"] === "directory") dirArray.push(next);
+		 else if(curDirCont[key]["type"] === "url") fileArray.push(next);
 		 else console.log("Error in renderCurrentDirectory, " + curDirCont[key] + " type is invalid");
 	   }
-	   dirArray = dirArray.sort();
-	   fileArray = fileArray.sort();
+	   dirArray.sort(function(a, b){
+			if(Object.keys(a)[0].toUpperCase() < Object.keys(b)[0].toUpperCase()) return -1; //keys[0] is the only key, which is the name
+			if(Object.keys(a)[0].toUpperCase() > Object.keys(b)[0].toUpperCase()) return 1;
+			return 0;
+	   });
+	   fileArray.sort(function(a, b){
+			if(Object.keys(a)[0].toUpperCase() < Object.keys(b)[0].toUpperCase()) return -1;
+			if(Object.keys(a)[0].toUpperCase() > Object.keys(b)[0].toUpperCase()) return 1;
+			return 0;
+	   });
+	   console.log("Sorted arrays: ");
+	   console.log(dirArray);
+	   console.log(fileArray);
        var count = 0;
        $("#contentsTable tr:not(#head_row)").remove();
        for(var i = 0; i < dirArray.length; i++){
+	      var key = Object.keys(dirArray[i]);
+		  console.log("KEY: " + key);
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
-                              + " srcName=\"" + Object.keys(dirArray[i]) + "\">"
-                              + "<td><p>" + Object.keys(dirArray[i]) + "</p>" 
+                              + " srcName=\"" + key + "\">"
+                              + "<td><p>" + key + "</p>" 
                               +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
                               + "</td>"
-                              + "<td>" + dirArray[i]["type"] + "</td></tr>");
+                              + "<td>" + dirArray[i][key]["type"] + "</td></tr>");
           $("#contentsTable tr:last").after(tableElem);
           tableElem.dblclick(fireFsItem);
           tableElem.click(listenFsItem);
           count++;
        }
 	   for(var i = 0; i < fileArray.length; i++){
+	      var key = Object.keys(fileArray[i]);
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
-                              + " srcName=\"" + Object.keys(fileArray[i]) + "\">"
-                              + "<td><p>" + Object.keys(fileArray[i]) + "</p>" 
+                              + " srcName=\"" + key + "\">"
+                              + "<td><p>" + key + "</p>" 
                               +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
                               + "</td>"
-                              + "<td>" + fileArray[i]["type"] + "</td></tr>");
+                              + "<td>" + fileArray[i][key]["type"] + "</td></tr>");
           $("#contentsTable tr:last").after(tableElem);
           tableElem.dblclick(fireFsItem);
           tableElem.click(listenFsItem);
@@ -211,6 +227,7 @@ function createFolder(path, name) {
     console.log("2 in callback for sync get");
       fileSystem = JSON.parse(fileSystem[fskey]);
        var curDirCont = parseFilesystemContents(fileSystem, path); 
+	   console.log(curDirCont);
        if(!validName(name)) {
          window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
        } else {
@@ -219,6 +236,7 @@ function createFolder(path, name) {
             "contents" : {}
          };
          if(curDirCont[name]) {
+		     console.log("cur dir is " + JSON.stringify(curDirCont));
             //prompt to delete existing file
             var del = window.confirm("An item with that name already exists. Should we replace it? (***Careful! This will delete all contents if it is a folder***)");
             if(del == false) {
