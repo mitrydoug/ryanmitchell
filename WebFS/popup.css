@@ -160,9 +160,26 @@ td {
 	color: #FF5757;
 }
 
+.newLineToken {
+	clear: both;
+	background-color: #700007;
+	display: inline-block;
+	padding: 5px;
+	margin: 3px;
+	margin-right: 0px;
+	cursor: default;
+	font-family: "Verdana", serif, normal;
+	font-size: 20px;
+	color: #FF5757;
+}
+
+.newLineToken:hover{
+	color: white;
+}
+
 .menuBarToken:hover{
 	color: white;
-};
+}
 
 #saveFalldown {
 	background-color: ;
