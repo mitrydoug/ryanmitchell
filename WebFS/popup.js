@@ -12,14 +12,17 @@ var cdkey = "currentDir";
  *   is found.
  **/
 function getCurrentTabUrl(callback) {
+	console.log("Getting cur tab URL");
   // Query filter to be passed to chrome.tabs.query - see
   // https://developer.chrome.com/extensions/tabs#method-query
   var queryInfo = {
     active: true,
-    currentWindow: true
+    //currentWindow: true*/
+	lastFocusedWindow: true
   };
 
   chrome.tabs.query(queryInfo, function(tabs) {
+	console.log("query");
     // chrome.tabs.query invokes the callback with a list of tabs that match the
     // query. When the popup is opened, there is certainly a window and at least
     // one tab, so we can safely assume that |tabs| is a non-empty array.
@@ -36,7 +39,7 @@ function getCurrentTabUrl(callback) {
     // from |queryInfo|), then the "tabs" permission is required to see their
     // "url" properties.
     console.assert(typeof url == 'string', 'tab.url should be a string');
-
+	console.log("getting url was sucessful");
     callback(url);
   });
 
@@ -136,24 +139,6 @@ function parseFilesystemContents(fileSystemContents, path){
 }
 
 function renderCurrentDirectory(path){
-
-  /*var fs = {
-    "dir1": {
-      "type": "directory",
-      "contents" : {
-        "doop": {
-          "type": "directory",
-          "contents":{"wakaka": "bloop"}
-        }
-        "google" : {
-          "type": "url",
-          "url": "https://www.google.com/?gws_rd=ssl"
-        }
-      }
-    }
-  };*/
-
-  //console.log(parseFilesystemContents(fs, pat));
   console.log("rendering: " + path);
 
   var pathTokens = path.split("/").slice(1, path.split("/").length - 1);
@@ -179,16 +164,38 @@ function renderCurrentDirectory(path){
        console.log("fetched fs data");
        console.log(fileSystem);
        var curDirCont = parseFilesystemContents(JSON.parse(fileSystem[fskey]), path);
+	   var dirArray = new Array();
+	   var fileArray = new Array();
+	   for(key in curDirCont) {
+		 if(curDirCont[key]["type"] === "directory") dirArray.push({key : curDirCont[key]});
+		 else if(curDirCont[key]["type"] === "url") fileArray.push({key : curDirCont[key]});
+		 else console.log("Error in renderCurrentDirectory, " + curDirCont[key] + " type is invalid");
+	   }
+	   dirArray = dirArray.sort();
+	   fileArray = fileArray.sort();
        var count = 0;
        $("#contentsTable tr:not(#head_row)").remove();
-       for(key in curDirCont){
+       for(var i = 0; i < dirArray.length; i++){
           var tableElem = $("<tr id=\"file" + count + "\"" 
                               + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
-                              + " srcName=\"" + key + "\">"
-                              + "<td><p>" + key + "</p>" 
+                              + " srcName=\"" + Object.keys(dirArray[i]) + "\">"
+                              + "<td><p>" + Object.keys(dirArray[i]) + "</p>" 
                               +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
                               + "</td>"
-                              + "<td>" + curDirCont[key]["type"] + "</td></tr>");
+                              + "<td>" + dirArray[i]["type"] + "</td></tr>");
+          $("#contentsTable tr:last").after(tableElem);
+          tableElem.dblclick(fireFsItem);
+          tableElem.click(listenFsItem);
+          count++;
+       }
+	   for(var i = 0; i < fileArray.length; i++){
+          var tableElem = $("<tr id=\"file" + count + "\"" 
+                              + "class=\"" + (count % 2 == 0 ? "oddfile" : "evenfile") + "\""
+                              + " srcName=\"" + Object.keys(fileArray[i]) + "\">"
+                              + "<td><p>" + Object.keys(fileArray[i]) + "</p>" 
+                              +   "<img class=\"rightFloat\" src=\"deleteIcon.png\"></img>"
+                              + "</td>"
+                              + "<td>" + fileArray[i]["type"] + "</td></tr>");
           $("#contentsTable tr:last").after(tableElem);
           tableElem.dblclick(fireFsItem);
           tableElem.click(listenFsItem);
@@ -243,8 +250,9 @@ function isEmpty(object) {
 //this will get called when the save button is clicked and it will save the current URL into the current directory
 function saveURL(path, name) {
   getCurrentTabUrl(function(url) {
+	console.log("Not getting here");
     chrome.storage.sync.get(fskey, function(fileSystem) {
-      console.log(fileSystem);
+      console.log("in the get of getURL");
       fileSystem = fileSystem[fskey];
       console.log(fileSystem);
       fileSystem = JSON.parse(fileSystem);
@@ -266,11 +274,13 @@ function saveURL(path, name) {
               return;
             }
          }
+		 console.log("about to create new obj");
          curDirCont[name] = newObj;
          var obj = {};
          obj[fskey] = JSON.stringify(fileSystem)
          chrome.storage.sync.set(obj, function() {
-          renderCurrentDirectory(path);
+			console.log("add successful");
+            renderCurrentDirectory(path);
          });
          curDirCont = parseFilesystemContents(fileSystem, path); 
          console.log("After adding URL");
