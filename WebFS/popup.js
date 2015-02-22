@@ -145,6 +145,28 @@ function parseFilesystemContents(fileSystemContents, path){
   }
 }
 
+function dequeue(){
+  chrome.storage.sync.get(fbkey, function(fsobj){
+    var filesystem = JSON.parse(fsobj[fbkey]);
+    var queueCont = parseFilesystemContents(filesystem, "/queue/");
+    var urgent = "";
+    for(key in queueCont){
+      if(urgent === "" || queueCont[urgent]["time_stamp"] > queueCont[key]["time_stamp"]){
+          urgent = key;
+      }
+    }
+    if(key !== ""){
+      chrome.tabs.create({url : queueCont[key]["url"]});
+      delete queueCont[key];
+      var obj = {};
+      obj[fskey] = JSON.stringify(filesystem);
+      chrome.storage.sync.set(obj, function(){
+        //renderCurrentDirectory("/queue/");
+      })
+    }
+  });
+}
+
 function openSelected() {
 	chrome.storage.sync.get(cdkey, function(cdobj) {
 		chrome.storage.sync.get(fskey, function(fsobj) {
@@ -245,8 +267,13 @@ function renderCurrentDirectory(path){
 			return 0;
 	   });
 	   fileArray.sort(function(a, b){
-			if(Object.keys(a)[0].toUpperCase() < Object.keys(b)[0].toUpperCase()) return -1;
-			if(Object.keys(a)[0].toUpperCase() > Object.keys(b)[0].toUpperCase()) return 1;
+      if(path == "/queue/"){
+        if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) < parseInt(b[Object.keys(b)[0]]["time_stamp"])) return -1;
+        if(parseInt(a[Object.keys(a)[0]]["time_stamp"]) > parseInt(b[Object.keys(b)[0]]["time_stamp"])) return 1;
+      } else {
+  			if(Object.keys(a)[0].toUpperCase() < Object.keys(b)[0].toUpperCase()) return -1;
+  			if(Object.keys(a)[0].toUpperCase() > Object.keys(b)[0].toUpperCase()) return 1;
+      }
 			return 0;
 	   });
        var count = 0;
