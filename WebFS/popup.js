@@ -200,12 +200,10 @@ function renderCurrentDirectory(path){
 
 }
 
-function createFolder(cdobj) {
-  var path = cdobj[cdkey];
+function createFolder(path, name) {
   chrome.storage.sync.get(fskey, function(fileSystem) {
       fileSystem = JSON.parse(fileSystem[fskey]);
        var curDirCont = parseFilesystemContents(fileSystem, path); 
-       var name = window.prompt("Please enter a name for this folder.", "");
        if(!validName(name)) {
          window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
        } else {
@@ -243,11 +241,7 @@ function isEmpty(object) {
 }
 
 //this will get called when the save button is clicked and it will save the current URL into the current directory
-function saveURL(cdobj) {
-
-
-
-  /*var path = cdobj[cdkey];
+function saveURL(path, name) {
   getCurrentTabUrl(function(url) {
     chrome.storage.sync.get(fskey, function(fileSystem) {
       console.log(fileSystem);
@@ -257,7 +251,6 @@ function saveURL(cdobj) {
       var curDirCont = parseFilesystemContents(fileSystem, path); 
       console.log("Before adding URL");
 	    console.log(fileSystem);
-      var name = window.prompt("Please enter a name for this web page.", "");
 	    if(!name) return;
         if(!validName(name)) {
           window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
@@ -284,7 +277,7 @@ function saveURL(cdobj) {
          console.log(fileSystem);
        }
     });
-  });*/
+  });
 }
 
 function renameItem(event, oldName) {
@@ -469,9 +462,17 @@ function moveUpDir() {
 }
 
 function saveFormHandler(event) {
-  var 
+  var name = $("#saveFormInput").val();
+  chrome.storage.sync.get(cdkey, function(cdobj){
+    console.log("here");
+    saveURL(cdobj[cdkey], name);
+  });
 }
 
 function createFormHandler(event) {
-
+  var name = $("#createFormInput").val();
+  chrome.storage.sync.get(cdkey, function(cdobj){
+    console.log("here");
+    createFolder(cdobj[cdkey], name);
+  });
 }
