@@ -178,7 +178,7 @@ function renderCurrentDirectory(path){
 	   for(key in curDirCont) {
 	     var next = {};
 		 next[key] = curDirCont[key];
-		 if(curDirCont[key]["type"] === "directory") dirArray.push(next);
+		 if(curDirCont[key]["type"] === "directory" || curDirCont[key]["type"] === "queue") dirArray.push(next);
 		 else if(curDirCont[key]["type"] === "url") fileArray.push(next);
 		 else console.log("Error in renderCurrentDirectory, " + curDirCont[key] + " type is invalid");
 	   }
