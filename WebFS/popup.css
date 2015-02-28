@@ -13,6 +13,9 @@ body {
 div {
 	padding: 0px;
 	margin: 0px;
+    -webkit-user-select: none; /* Chrome/Safari */        
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+ */
 }
 
 p {
