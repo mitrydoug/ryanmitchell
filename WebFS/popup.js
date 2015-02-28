@@ -512,7 +512,7 @@ function saveURL(path, name) {
   });
 }
 
-function renameItem(event, oldName) {
+function renameItem(event, oldName, newName) {
 	//var elem = $(event.target).value();
   console.log(oldName);
   console.log("did it submit?");
@@ -521,8 +521,6 @@ function renameItem(event, oldName) {
       var fileSystem = JSON.parse(fsobj[fskey]);
 			var curDirCont = parseFilesystemContents(fileSystem, cdobj[cdkey]);
       console.log("123 " + JSON.stringify(curDirCont));
-      var newName = $("#renamingInput").val();
-      newName = trimName(newName);
       if(!validName(newName)){
           window.alert("Error: Please enter a valid name ('/' is not allowed and the character limit is 32).");
           return;
@@ -612,18 +610,22 @@ function listenFsItem(event){
     console.log("name: " + name);
     elem.css("display","none");
     var textInput = $("<input id=\"renamingInput\"type=\"input\" value=\"" + name + "\"></input>"); 
-    var textForm = $("<form></form>").append(textInput);
-    rowElem.children("td:first").append(textForm);
+    //var textForm = $("<form></form>").append(textInput);
+    rowElem.children("td:first").append(textInput);
     textInput.select();
     textInput.blur(function(e){
-      textForm.remove();
+      textInput.remove();
       elem.css("display", "inline");
       //td.prepend("<input id=\"renamingInput\"type=\"input\" value=\"" + name + "\"></input>");
     });
-    textInput.submit(function(event){
-      console.log("In pseudo handler");
-      renameItem(event, name);
-    });
+    textInput.keypress(function(e){
+	  if(e.which === 13){
+        console.log("In pseudo handler"); 
+        var newName = trimName(textInput.val());
+		textInput.remove();
+        renameItem(event, name, newName);
+	  }	
+	});
   } else if(elem.prop("tagName") == "IMG"){
     if(elem.attr("src") === "deleteIcon.png"){
       elem.remove();
